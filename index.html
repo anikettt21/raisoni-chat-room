@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raisoni Gang Chat Room</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 8s ease infinite;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Floating orbs background */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+      animation: float 6s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .hero-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      max-width: 420px;
+      width: 90%;
+      position: relative;
+      z-index: 2;
+      animation: slideUp 1s ease-out;
+      text-align: center;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    .nickname-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .nickname-input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .nickname-input:focus {
+      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 
+        0 0 0 3px rgba(255, 255, 255, 0.1),
+        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .join-btn {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.9);
+      color: #667eea;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 16px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.1),
+        0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .join-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .join-btn:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 
+        0 8px 30px rgba(0, 0, 0, 0.2),
+        0 1px 0 rgba(255, 255, 255, 0.3) inset;
+    }
+
+    .join-btn:hover::before {
+      left: 100%;
+    }
+
+    .join-btn:active {
+      transform: translateY(0);
+      box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    }
+
+    footer {
+      padding: 2rem 1rem 1rem;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      z-index: 2;
+    }
+
+    /* Responsive design */
+    @media (max-width: 500px) {
+      .hero-card {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+        border-radius: 20px;
+      }
+      
+      h1 { 
+        font-size: 1.8rem; 
+      }
+      
+      p { 
+        font-size: 1rem; 
+      }
+
+      .nickname-input {
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+      }
+
+      .join-btn {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .hero-card {
+        padding: 1.5rem 1rem;
+      }
+      
+      h1 { 
+        font-size: 1.6rem; 
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="hero-card">
+    <h1>Raisoni Gang Chat Room</h1>
+    <p>Jitni chahe utani Karo bakchodi 😡</p>
+
+    <input 
+      type="text" 
+      class="nickname-input" 
+      id="nickname" 
+      placeholder="Enter your nickname (optional)">
+     
+    <a href="chat.html" class="join-btn" onclick="saveNickname()">Join Chat</a>
+  </main>
+
+  <footer>
+    Made by Aniket Gade !
+  </footer>
+
+  <script>
+    // Function to save nickname to localStorage
+    function saveNickname() {
+      try {
+        const input = document.getElementById("nickname").value.trim();
+        let nickname = input || "Anonymous" + Math.floor(Math.random() * 1000);
+        localStorage.setItem("nickname", nickname);
+        localStorage.setItem("userNickname", nickname); // Keep both for compatibility
+      } catch (error) {
+        console.error("Failed to save nickname:", error);
+      }
+    }
+
+    // Load saved nickname when page loads
+    function loadSavedNickname() {
+      const savedNickname = localStorage.getItem("nickname");
+      if (savedNickname) {
+        document.getElementById("nickname").value = savedNickname;
+      }
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSavedNickname();
+      
+      // Add real-time nickname saving
+      const nicknameInput = document.getElementById("nickname");
+      nicknameInput.addEventListener('input', function() {
+        localStorage.setItem("userNickname", this.value.trim());
+      });
+    });
+  </script>
+</body>
+</html>

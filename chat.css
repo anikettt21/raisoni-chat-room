@@ -1,0 +1,549 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chat-container {
+    width: 90%;
+    max-width: 800px;
+    height: 90vh;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative; /* Added for positioning context */
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.status-indicator {
+    padding: 5px 10px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+#messagesContainer {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 70%;
+    word-wrap: break-word;
+    animation: messageSlide 0.3s ease-out;
+    position: relative;
+}
+
+@keyframes messageSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.my-message {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.other-message {
+    background: white;
+    color: #333;
+    align-self: flex-start;
+    border: 1px solid #e1e8ed;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.message-username {
+    font-weight: bold;
+}
+
+.message-time {
+    font-size: 0.7rem;
+}
+
+.message-text {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.message-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.reaction-badge {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    user-select: none;
+    position: relative;
+}
+
+.reaction-badge:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.reaction-badge:active {
+    transform: scale(0.95);
+}
+
+.reaction-badge.my-reaction {
+    background: rgba(102, 126, 234, 0.2);
+    border: 2px solid #667eea;
+    font-weight: bold;
+}
+
+.my-message .reaction-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.my-message .reaction-badge:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.my-message .reaction-badge.my-reaction {
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.reaction-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.reaction-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.my-message .reaction-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.my-message .reaction-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.reaction-menu {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    gap: 5px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    animation: menuSlide 0.2s ease-out;
+    position: fixed;
+    z-index: 1000;
+}
+
+@keyframes menuSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.reaction-option {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reaction-option:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.1);
+}
+
+.reaction-option.current-reaction {
+    background: rgba(102, 126, 234, 0.2);
+    border: 2px solid #667eea;
+    transform: scale(1.05);
+}
+
+.reaction-option.current-reaction:hover {
+    background: rgba(102, 126, 234, 0.3);
+    transform: scale(1.15);
+}
+
+.system-message {
+    text-align: center;
+    padding: 8px 12px;
+    background: rgba(108, 117, 125, 0.1);
+    border-radius: 15px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    align-self: center;
+    max-width: 80%;
+}
+
+.welcome-message {
+    text-align: center;
+    padding: 15px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 10px;
+    color: #667eea;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(108, 117, 125, 0.1);
+    border-radius: 18px;
+    max-width: 70%;
+    align-self: flex-start;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 3px;
+}
+
+.typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: #6c757d;
+    border-radius: 50%;
+    animation: typingPulse 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingPulse {
+    0%, 60%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+.input-container {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e1e8ed;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e1e8ed;
+    border-radius: 25px;
+    font-size: 1rem;
+    resize: none;
+    min-height: 20px;
+    max-height: 100px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#messageInput:focus {
+    border-color: #667eea;
+}
+
+#sendBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+#sendBtn:hover:not(:disabled) {
+    transform: scale(1.1);
+}
+
+#sendBtn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.error-message {
+    background: #ff6b6b;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 10px 0;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    animation: errorSlide 0.3s ease-out;
+    align-self: center;
+    max-width: 80%;
+}
+
+@keyframes errorSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 95%;
+        height: 95vh;
+        border-radius: 10px;
+    }
+
+    .chat-header {
+        padding: 15px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chat-title {
+        font-size: 1.3rem;
+    }
+
+    .user-info {
+        font-size: 0.8rem;
+        gap: 10px;
+    }
+
+    #messagesContainer {
+        padding: 15px;
+    }
+
+    .message {
+        max-width: 85%;
+        padding: 10px 14px;
+    }
+
+    .input-container {
+        padding: 15px;
+    }
+
+    #messageInput {
+        font-size: 0.9rem;
+        padding: 10px 14px;
+    }
+
+    #sendBtn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .reaction-menu {
+        padding: 6px;
+        gap: 3px;
+    }
+
+    .reaction-option {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .chat-header {
+        padding: 12px;
+    }
+
+    .chat-title {
+        font-size: 1.2rem;
+    }
+
+    .user-info {
+        font-size: 0.75rem;
+        gap: 8px;
+    }
+
+    .status-indicator {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+
+    #messagesContainer {
+        padding: 12px;
+    }
+
+    .message {
+        max-width: 90%;
+        padding: 8px 12px;
+    }
+
+    .message-header {
+        font-size: 0.75rem;
+    }
+
+    .message-text {
+        font-size: 0.9rem;
+    }
+
+    .input-container {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    #messageInput {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+
+    #sendBtn {
+        width: 38px;
+        height: 38px;
+    }
+
+    .error-message {
+        font-size: 0.8rem;
+        padding: 10px 12px;
+        max-width: 90%;
+    }
+
+    .reaction-badge {
+        font-size: 0.7rem;
+        padding: 3px 6px;
+    }
+
+    .reaction-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    }
+
+    .reaction-menu {
+        padding: 4px;
+        gap: 2px;
+    }
+
+    .reaction-option {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+}
