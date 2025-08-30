@@ -17,6 +17,21 @@ const io = new Server(server, {
 // Serve static files
 app.use(express.static(path.join(__dirname)));
 
+// Serve the main HTML file for the root route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'chat.html'));
+});
+
+// Serve index.html as fallback
+app.get('/index.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Health check endpoint for Vercel
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Chat server is running' });
+});
+
 // Add basic error handling for express
 app.use((err, req, res, next) => {
   console.error('Express error:', err.stack);
