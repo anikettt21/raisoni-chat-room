@@ -22,12 +22,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'chat.html'));
 });
 
-// Serve index.html as fallback
-app.get('/index.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Health check endpoint for Vercel
+// Health check endpoint for Render
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Chat server is running' });
 });

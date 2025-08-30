@@ -1,113 +1,61 @@
-# Raisoni Gang Chat Application
+# Raisoni Gang Chat App
 
-A real-time chat application built with Node.js, Express, Socket.IO, and vanilla JavaScript.
+A real-time chat application built with Node.js, Express, and Socket.IO.
 
-## 🐛 Recent Bug Fixes
+## Features
 
-### Fixed Issues:
-1. **Socket.IO Loading Order**: Moved Socket.IO CDN before main script to prevent timing issues
-2. **Username Integration**: Now properly uses saved nicknames from localStorage
-3. **Debug Element References**: Removed references to non-existent debug elements
-4. **Typing Indicators**: Fixed to work in both connected and local modes
-5. **Message Input Auto-resize**: Improved textarea resizing functionality
-6. **Server Rate Limiting**: Enhanced cleanup for disconnected users
-7. **Error Message Styling**: Added proper animations and positioning
-8. **Mobile Responsiveness**: Improved layout for small screens
-9. **Username Conflict Resolution**: Added proper handling of username change events
-10. **XSS Protection**: Consistent HTML escaping throughout the application
+- Real-time messaging
+- User join/leave notifications
+- Message reactions
+- Typing indicators
+- Rate limiting
+- Message history (last 50 messages)
 
-## 🚀 Features
+## Local Development
 
-- **Real-time messaging** with Socket.IO
-- **User presence indicators** (online/offline status)
-- **Typing indicators** showing when users are typing
-- **Message history** (last 50 messages)
-- **Rate limiting** to prevent spam
-- **Responsive design** for mobile and desktop
-- **Local mode fallback** when server is unavailable
-- **Username persistence** using localStorage
-- **Auto-reconnection** with exponential backoff
-
-## 📦 Installation
-
-1. Clone the repository
-2. Install dependencies:
+1. Install dependencies:
    ```bash
    npm install
    ```
-3. Start the server:
+
+2. Start the development server:
    ```bash
-   npm start
+   npm run dev
    ```
-4. Open `http://localhost:3000` in your browser
 
-## 🛠️ Development
+3. Open your browser and go to `http://localhost:3000`
 
-For development with auto-restart:
-```bash
-npm run dev
-```
+## Deployment on Render
 
-## 📱 Usage
+### Option 1: Using render.yaml (Recommended)
 
-1. **Landing Page** (`index.html`):
-   - Enter your nickname (optional)
-   - Click "Join Chat" to enter the chat room
+1. Push your code to GitHub
+2. Go to [Render Dashboard](https://dashboard.render.com)
+3. Click "New +" and select "Blueprint"
+4. Connect your GitHub repository
+5. Render will automatically detect the `render.yaml` file and deploy
 
-2. **Chat Room** (`chat.html`):
-   - Type messages in the input field
-   - Press Enter or click the send button
-   - See real-time updates from other users
-   - View typing indicators and user status
+### Option 2: Manual Deployment
 
-## 🔧 Technical Details
+1. Push your code to GitHub
+2. Go to [Render Dashboard](https://dashboard.render.com)
+3. Click "New +" and select "Web Service"
+4. Connect your GitHub repository
+5. Configure the service:
+   - **Name**: raisoni-chat-app
+   - **Environment**: Node
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/api/health`
 
-### Frontend
-- **HTML5**: Semantic markup with proper accessibility
-- **CSS3**: Modern styling with animations and responsive design
-- **Vanilla JavaScript**: ES6+ features, no frameworks
-- **Socket.IO Client**: Real-time communication
+## Environment Variables
 
-### Backend
-- **Node.js**: Server runtime
-- **Express**: Web framework
-- **Socket.IO**: Real-time bidirectional communication
-- **Rate Limiting**: Prevents message spam
-- **Message Sanitization**: XSS protection
+- `NODE_ENV`: Set to `production` for production deployment
+- `PORT`: Port number (Render will set this automatically)
 
-### Security Features
-- Input sanitization for messages and usernames
-- Rate limiting (10 messages per minute)
-- HTML escaping to prevent XSS attacks
-- CORS configuration for cross-origin requests
+## Technologies Used
 
-## 🌐 Browser Support
-
-- Chrome 60+
-- Firefox 55+
-- Safari 12+
-- Edge 79+
-
-## 📄 License
-
-MIT License - see LICENSE file for details
-
-## 👥 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 🐛 Bug Reports
-
-If you find any bugs, please create an issue with:
-- Browser and version
-- Steps to reproduce
-- Expected vs actual behavior
-- Console errors (if any)
-
----
-
-**Made with ❤️ by Aniket Gade**
+- Node.js
+- Express.js
+- Socket.IO
+- HTML/CSS/JavaScript
