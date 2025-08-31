@@ -39,6 +39,11 @@ const recentMessages = []; // Store last 50 messages
 const MAX_MESSAGES = 50;
 const typingUsers = new Map(); // username -> socketId
 
+// Private chat functionality
+const privateChats = new Map(); // chatId -> { participants: Set, messages: [] }
+const userPrivateChats = new Map(); // username -> Set of chatIds
+const MAX_PRIVATE_MESSAGES = 100;
+
 // Rate limiting
 const messageLimits = new Map(); // socketId -> { count, resetTime }
 const MESSAGE_RATE_LIMIT = 10; // messages per minute
@@ -175,6 +180,68 @@ function cleanupRateLimits() {
       messageLimits.delete(socketId);
     }
   }
+}
+
+// Private chat helper functions
+function createPrivateChatId(user1, user2) {
+  // Create a consistent chat ID regardless of who initiates
+  const sortedUsers = [user1, user2].sort();
+  return `private_${sortedUsers[0]}_${sortedUsers[1]}`;
+}
+
+function getOrCreatePrivateChat(user1, user2) {
+  const chatId = createPrivateChatId(user1, user2);
+  
+  if (!privateChats.has(chatId)) {
+    privateChats.set(chatId, {
+      participants: new Set([user1, user2]),
+      messages: []
+    });
+  }
+  
+  // Ensure both users are tracked as having this private chat
+  if (!userPrivateChats.has(user1)) {
+    userPrivateChats.set(user1, new Set());
+  }
+  if (!userPrivateChats.has(user2)) {
+    userPrivateChats.set(user2, new Set());
+  }
+  
+  userPrivateChats.get(user1).add(chatId);
+  userPrivateChats.get(user2).add(chatId);
+  
+  return chatId;
+}
+
+function addPrivateMessageToHistory(chatId, messageData) {
+  const chat = privateChats.get(chatId);
+  if (!chat) return false;
+  
+  // Initialize reactions if not present
+  if (!messageData.reactions) {
+    messageData.reactions = {};
+  }
+  
+  // Ensure message has a unique ID as string
+  if (!messageData.id) {
+    messageData.id = String(Date.now() + Math.random());
+  }
+  
+  chat.messages.push({
+    ...messageData,
+    id: String(messageData.id)
+  });
+  
+  // Keep only recent messages
+  if (chat.messages.length > MAX_PRIVATE_MESSAGES) {
+    chat.messages.shift();
+  }
+  
+  return true;
+}
+
+function getOnlineUsers() {
+  return Array.from(connectedUsers.values()).map(user => user.username);
 }
 
 io.on("connection", (socket) => {
@@ -375,6 +442,198 @@ io.on("connection", (socket) => {
       console.log(`${oldUsername} changed username to ${newUsername}`);
     } catch (error) {
       console.error('Error handling username change:', error);
+    }
+  });
+
+  // Private chat events
+  socket.on('get online users', () => {
+    try {
+      const userData = connectedUsers.get(socket.id);
+      if (!userData) return;
+      
+      const onlineUsers = getOnlineUsers();
+      socket.emit('online users list', { users: onlineUsers });
+    } catch (error) {
+      console.error('Error getting online users:', error);
+    }
+  });
+
+  socket.on('invite to private chat', (data) => {
+    try {
+      const userData = connectedUsers.get(socket.id);
+      if (!userData) {
+        socket.emit('error', { message: 'User not found. Please refresh.' });
+        return;
+      }
+
+      const { targetUsername } = data;
+      if (!targetUsername || targetUsername === userData.username) {
+        socket.emit('error', { message: 'Invalid target user' });
+        return;
+      }
+
+      // Check if target user is online
+      const targetUser = Array.from(connectedUsers.values()).find(user => user.username === targetUsername);
+      if (!targetUser) {
+        socket.emit('error', { message: 'User is not online' });
+        return;
+      }
+
+      // Get target user's socket
+      const targetSocket = io.sockets.sockets.get(targetUser.socketId);
+      if (!targetSocket) {
+        socket.emit('error', { message: 'User is not available' });
+        return;
+      }
+
+      // Send invite to target user
+      targetSocket.emit('private chat invite', {
+        fromUsername: userData.username,
+        timestamp: new Date().toISOString()
+      });
+
+      // Confirm invite sent to sender
+      socket.emit('private chat invite sent', {
+        toUsername: targetUsername,
+        timestamp: new Date().toISOString()
+      });
+
+      console.log(`${userData.username} invited ${targetUsername} to private chat`);
+    } catch (error) {
+      console.error('Error sending private chat invite:', error);
+      socket.emit('error', { message: 'Failed to send invite' });
+    }
+  });
+
+  socket.on('accept private chat', (data) => {
+    try {
+      const userData = connectedUsers.get(socket.id);
+      if (!userData) {
+        socket.emit('error', { message: 'User not found. Please refresh.' });
+        return;
+      }
+
+      const { fromUsername } = data;
+      if (!fromUsername) {
+        socket.emit('error', { message: 'Invalid sender' });
+        return;
+      }
+
+      // Check if sender is still online
+      const senderUser = Array.from(connectedUsers.values()).find(user => user.username === fromUsername);
+      if (!senderUser) {
+        socket.emit('error', { message: 'User is no longer online' });
+        return;
+      }
+
+      // Create or get private chat
+      const chatId = getOrCreatePrivateChat(userData.username, fromUsername);
+      
+      // Get sender's socket
+      const senderSocket = io.sockets.sockets.get(senderUser.socketId);
+      if (senderSocket) {
+        senderSocket.emit('private chat accepted', {
+          byUsername: userData.username,
+          chatId: chatId,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Send chat history to both users
+      const chat = privateChats.get(chatId);
+      if (chat && chat.messages.length > 0) {
+        const last20Messages = chat.messages.slice(-20);
+        socket.emit('private chat history', {
+          chatId: chatId,
+          messages: last20Messages,
+          withUsername: fromUsername
+        });
+        
+        if (senderSocket) {
+          senderSocket.emit('private chat history', {
+            chatId: chatId,
+            messages: last20Messages,
+            withUsername: userData.username
+          });
+        }
+      }
+
+      console.log(`${userData.username} accepted private chat with ${fromUsername}`);
+    } catch (error) {
+      console.error('Error accepting private chat:', error);
+      socket.emit('error', { message: 'Failed to accept private chat' });
+    }
+  });
+
+  socket.on('private message', (data) => {
+    try {
+      // Check rate limit
+      if (!checkRateLimit(socket.id)) {
+        socket.emit('error', { message: 'Rate limit exceeded. Please slow down.' });
+        return;
+      }
+
+      const userData = connectedUsers.get(socket.id);
+      if (!userData) {
+        socket.emit('error', { message: 'User not found. Please refresh.' });
+        return;
+      }
+
+      const { chatId, message: messageText, toUsername } = data;
+      if (!chatId || !messageText || !toUsername) {
+        socket.emit('error', { message: 'Invalid private message data' });
+        return;
+      }
+
+      const sanitizedMessage = sanitizeMessage(messageText);
+      if (!sanitizedMessage) {
+        socket.emit('error', { message: 'Invalid message' });
+        return;
+      }
+
+      // Verify chat exists and user is participant
+      const chat = privateChats.get(chatId);
+      if (!chat || !chat.participants.has(userData.username) || !chat.participants.has(toUsername)) {
+        socket.emit('error', { message: 'Invalid chat room' });
+        return;
+      }
+
+      const messageData = {
+        id: data.id || String(Date.now() + Math.random()),
+        username: userData.username,
+        message: sanitizedMessage,
+        timestamp: new Date().toISOString(),
+        reactions: {},
+        isPrivate: true
+      };
+
+      // Add to private chat history
+      addPrivateMessageToHistory(chatId, messageData);
+
+      // Send to both participants
+      const targetUser = Array.from(connectedUsers.values()).find(user => user.username === toUsername);
+      if (targetUser) {
+        const targetSocket = io.sockets.sockets.get(targetUser.socketId);
+        if (targetSocket) {
+          targetSocket.emit('private message', {
+            ...messageData,
+            chatId: chatId,
+            fromUsername: userData.username
+          });
+        }
+      }
+
+      // Send back to sender for confirmation
+      socket.emit('private message', {
+        ...messageData,
+        chatId: chatId,
+        fromUsername: userData.username
+      });
+
+      console.log(`Private message from ${userData.username} to ${toUsername}: ${sanitizedMessage}`);
+    } catch (error) {
+      console.error('Error handling private message:', error);
+      socket.emit('error', { message: 'Failed to send private message' });
     }
   });
 

@@ -542,6 +542,191 @@
             border: 1px solid rgba(255, 107, 107, 0.5);
         }
 
+        /* Online Users Modal Styles */
+        .online-users-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .online-users-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .online-users-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .online-users-modal.show .online-users-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .online-users-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .online-users-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .close-modal-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .close-modal-btn:hover {
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .online-users-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .online-user-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .online-user-item:hover {
+            background: rgba(102, 126, 234, 0.15);
+            transform: translateX(5px);
+        }
+
+        .online-user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .online-user-info {
+            flex: 1;
+        }
+
+        .online-user-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .online-user-status {
+            font-size: 0.8rem;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .online-indicator {
+            width: 8px;
+            height: 8px;
+            background: #48bb78;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.2);
+            }
+        }
+
+        .no-users-message {
+            text-align: center;
+            color: #718096;
+            font-style: italic;
+            padding: 2rem 1rem;
+        }
+
+        /* Make user count clickable */
+        #userCount {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem 0.75rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #userCount:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        #userCount:active {
+            transform: scale(0.98);
+        }
+
         @keyframes errorSlide {
             from {
                 opacity: 0;
@@ -695,6 +880,35 @@
                 height: 32px;
                 font-size: 1rem;
             }
+
+            /* Mobile modal styles */
+            .online-users-content {
+                padding: 1.5rem;
+                max-width: 95%;
+                max-height: 85vh;
+            }
+
+            .online-users-title {
+                font-size: 1.1rem;
+            }
+
+            .online-user-item {
+                padding: 0.625rem 0.875rem;
+            }
+
+            .online-user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+
+            .online-user-name {
+                font-size: 0.9rem;
+            }
+
+            .online-user-status {
+                font-size: 0.75rem;
+            }
         }
     </style>
     <!-- Socket.IO CDN - Load before main script -->
@@ -729,6 +943,21 @@
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                 </svg>
             </button>
+        </div>
+    </div>
+
+    <!-- Online Users Modal -->
+    <div class="online-users-modal" id="onlineUsersModal">
+        <div class="online-users-content">
+            <div class="online-users-header">
+                <div class="online-users-title">
+                    👥 Online Users
+                </div>
+                <button class="close-modal-btn" id="closeModalBtn">×</button>
+            </div>
+            <div class="online-users-list" id="onlineUsersList">
+                <!-- Online users will be populated here -->
+            </div>
         </div>
     </div>
 
@@ -803,6 +1032,10 @@
                         this.reconnectAttempts = 0;
                         this.updateConnectionStatus(`Connected as ${this.username} 🟢`);
                         
+                        // Add current user to online users set
+                        this.onlineUsers.add(this.username);
+                        this.updateUserCount(this.onlineUsers.size);
+                        
                         // Join chat with username
                         debugLog(`Joining chat as: ${this.username}`);
                         this.socket.emit('user joined', {
@@ -825,6 +1058,9 @@
                         }
                         this.onlineUsers.add(data.username);
                         this.updateUserCount(this.onlineUsers.size);
+                        
+                        // Refresh the modal if it's currently open
+                        this.refreshOnlineUsersList();
                     });
 
                     // Handle user leave notifications
@@ -833,12 +1069,28 @@
                         this.addSystemMessage(`${data.username} left the chat`, data.timestamp);
                         this.onlineUsers.delete(data.username);
                         this.updateUserCount(this.onlineUsers.size);
+                        
+                        // Refresh the modal if it's currently open
+                        this.refreshOnlineUsersList();
                     });
 
                     // Handle user count updates
                     this.socket.on('user count', (count) => {
                         debugLog(`👥 User count updated: ${count}`);
                         this.updateUserCount(count);
+                    });
+
+                    // Handle online users list updates
+                    this.socket.on('online users', (users) => {
+                        debugLog(`👥 Received online users list: ${users.length} users`);
+                        this.onlineUsers.clear();
+                        users.forEach(username => {
+                            this.onlineUsers.add(username);
+                        });
+                        this.updateUserCount(this.onlineUsers.size);
+                        
+                        // Refresh the modal if it's currently open
+                        this.refreshOnlineUsersList();
                     });
 
                     // Handle typing indicators
@@ -902,7 +1154,12 @@
                 debugLog('🔄 Running in local-only mode');
                 this.isConnected = false;
                 this.updateConnectionStatus(`Local mode - ${this.username} 💾`);
-                this.updateUserCount(1);
+                
+                // Add current user to online users set for local mode
+                this.onlineUsers.clear();
+                this.onlineUsers.add(this.username);
+                this.updateUserCount(this.onlineUsers.size);
+                
                 this.addSystemMessage('Running in local mode - messages will only be visible to you');
             }
 
@@ -969,6 +1226,37 @@
                         !this.currentReactionMenu.contains(e.target) && 
                         !e.target.classList.contains('reaction-btn')) {
                         this.closeReactionMenu();
+                    }
+                });
+
+                // Online users modal functionality
+                this.userCountElement.addEventListener('click', () => {
+                    debugLog('👥 User count clicked - showing online users');
+                    this.showOnlineUsersModal();
+                });
+
+                // Close modal button
+                const closeModalBtn = document.getElementById('closeModalBtn');
+                if (closeModalBtn) {
+                    closeModalBtn.addEventListener('click', () => {
+                        this.hideOnlineUsersModal();
+                    });
+                }
+
+                // Close modal when clicking outside
+                const modal = document.getElementById('onlineUsersModal');
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            this.hideOnlineUsersModal();
+                        }
+                    });
+                }
+
+                // Close modal with Escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.hideOnlineUsersModal();
                     }
                 });
 
@@ -1459,6 +1747,102 @@
             updateUserCount(count) {
                 debugLog(`👥 User count: ${count}`);
                 this.userCountElement.textContent = `👥 ${count} online`;
+            }
+
+            showOnlineUsersModal() {
+                debugLog('👥 Showing online users modal');
+                const modal = document.getElementById('onlineUsersModal');
+                const usersList = document.getElementById('onlineUsersList');
+                
+                if (modal && usersList) {
+                    // Request current online users list from server if connected
+                    if (this.isConnected && this.socket) {
+                        debugLog('📡 Requesting current online users list from server');
+                        this.socket.emit('get online users');
+                        
+                        // Add a small delay to allow server response, then populate with current data
+                        setTimeout(() => {
+                            this.populateOnlineUsersList(usersList);
+                        }, 100);
+                    } else {
+                        // Populate the users list with current data immediately for local mode
+                        this.populateOnlineUsersList(usersList);
+                    }
+                    
+                    // Show the modal
+                    modal.classList.add('show');
+                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                }
+            }
+
+            hideOnlineUsersModal() {
+                debugLog('👥 Hiding online users modal');
+                const modal = document.getElementById('onlineUsersModal');
+                
+                if (modal) {
+                    modal.classList.remove('show');
+                    document.body.style.overflow = ''; // Restore scrolling
+                }
+            }
+
+            populateOnlineUsersList(usersListElement) {
+                debugLog(`👥 Populating online users list with ${this.onlineUsers.size} users`);
+                debugLog(`👥 Current online users: ${Array.from(this.onlineUsers).join(', ')}`);
+                
+                // Clear existing list
+                usersListElement.innerHTML = '';
+                
+                if (this.onlineUsers.size === 0) {
+                    usersListElement.innerHTML = `
+                        <div class="no-users-message">
+                            No users currently online
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Convert Set to Array and sort alphabetically
+                const sortedUsers = Array.from(this.onlineUsers).sort();
+                
+                sortedUsers.forEach(username => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'online-user-item';
+                    
+                    // Get first letter for avatar
+                    const firstLetter = username.charAt(0).toUpperCase();
+                    
+                    // Check if this is the current user
+                    const isCurrentUser = username === this.username;
+                    
+                    userItem.innerHTML = `
+                        <div class="online-user-avatar">
+                            ${firstLetter}
+                        </div>
+                        <div class="online-user-info">
+                            <div class="online-user-name">
+                                ${this.escapeHtml(username)}
+                                ${isCurrentUser ? ' (You)' : ''}
+                            </div>
+                            <div class="online-user-status">
+                                <div class="online-indicator"></div>
+                                Online now
+                            </div>
+                        </div>
+                    `;
+                    
+                    usersListElement.appendChild(userItem);
+                });
+            }
+
+            // Method to refresh the online users list in the modal
+            refreshOnlineUsersList() {
+                const modal = document.getElementById('onlineUsersModal');
+                const usersList = document.getElementById('onlineUsersList');
+                
+                if (modal && modal.classList.contains('show') && usersList) {
+                    debugLog('🔄 Refreshing online users list in modal');
+                    this.populateOnlineUsersList(usersList);
+                }
             }
 
             scrollToBottom() {
