@@ -1,4 +1,4 @@
-        // Debug logging function (console only)
+ // Debug logging function (console only)
         function debugLog(message) {
             console.log(message);
         }
@@ -22,11 +22,6 @@
                 this.messageCount = 0;
                 this.currentReactionMenu = null; // Track current reaction menu
                 this.messageReactions = new Map(); // Store reactions state for each message
-                
-                // Private chat functionality
-                this.currentPrivateChat = null; // Current active private chat
-                this.privateChats = new Map(); // Store private chat data
-                this.pendingInvite = null; // Store pending invite data
                 
                 // Available reactions
                 this.availableReactions = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🎉'];
@@ -99,6 +94,9 @@
                         }
                         this.onlineUsers.add(data.username);
                         this.updateUserCount(this.onlineUsers.size);
+                        
+                        // Refresh the modal if it's currently open
+                        this.refreshOnlineUsersList();
                     });
 
                     // Handle user leave notifications
@@ -107,12 +105,28 @@
                         this.addSystemMessage(`${data.username} left the chat`, data.timestamp);
                         this.onlineUsers.delete(data.username);
                         this.updateUserCount(this.onlineUsers.size);
+                        
+                        // Refresh the modal if it's currently open
+                        this.refreshOnlineUsersList();
                     });
 
                     // Handle user count updates
                     this.socket.on('user count', (count) => {
                         debugLog(`👥 User count updated: ${count}`);
                         this.updateUserCount(count);
+                    });
+
+                    // Handle online users list updates
+                    this.socket.on('online users', (users) => {
+                        debugLog(`👥 Received online users list: ${users.length} users`);
+                        this.onlineUsers.clear();
+                        users.forEach(username => {
+                            this.onlineUsers.add(username);
+                        });
+                        this.updateUserCount(this.onlineUsers.size);
+                        
+                        // Refresh the modal if it's currently open
+                        this.refreshOnlineUsersList();
                     });
 
                     // Handle typing indicators
@@ -140,38 +154,6 @@
                     this.socket.on('message reaction', (data) => {
                         debugLog(`😀 Reaction received: ${data.reaction} on message ${data.messageId}`);
                         this.updateMessageReactions(data.messageId, data.reaction, data.username, data.action);
-                    });
-
-                    // Handle private chat events
-                    this.socket.on('private chat invite', (data) => {
-                        debugLog(`💬 Private chat invite from: ${data.fromUsername}`);
-                        this.showPrivateChatInvite(data.fromUsername, data.timestamp);
-                    });
-
-                    this.socket.on('private chat invite sent', (data) => {
-                        debugLog(`💬 Private chat invite sent to: ${data.toUsername}`);
-                        this.addSystemMessage(`Private chat invite sent to ${data.toUsername}`, data.timestamp);
-                    });
-
-                    this.socket.on('private chat accepted', (data) => {
-                        debugLog(`💬 Private chat accepted by: ${data.byUsername}`);
-                        this.addSystemMessage(`${data.byUsername} accepted your private chat invite`, data.timestamp);
-                        this.openPrivateChat(data.chatId, data.byUsername);
-                    });
-
-                    this.socket.on('private chat history', (data) => {
-                        debugLog(`💬 Private chat history received for chat: ${data.chatId}`);
-                        this.loadPrivateChatHistory(data.chatId, data.messages, data.withUsername);
-                    });
-
-                    this.socket.on('private message', (data) => {
-                        debugLog(`💬 Private message from ${data.fromUsername}: ${data.message}`);
-                        this.addPrivateMessage(data.chatId, data.fromUsername, data.message, data.username === this.username, data.timestamp, data.id);
-                    });
-
-                    this.socket.on('online users list', (data) => {
-                        debugLog(`👥 Online users list received: ${data.users.length} users`);
-                        this.updateOnlineUsersList(data.users);
                     });
 
                     // Handle errors
@@ -314,80 +296,6 @@
                     }
                 });
 
-                // Private chat modal event listeners
-                const closeInviteModalBtn = document.getElementById('closeInviteModalBtn');
-                if (closeInviteModalBtn) {
-                    closeInviteModalBtn.addEventListener('click', () => {
-                        this.hidePrivateChatInvite();
-                    });
-                }
-
-                const acceptInviteBtn = document.getElementById('acceptInviteBtn');
-                if (acceptInviteBtn) {
-                    acceptInviteBtn.addEventListener('click', () => {
-                        this.acceptPrivateChatInvite();
-                    });
-                }
-
-                const declineInviteBtn = document.getElementById('declineInviteBtn');
-                if (declineInviteBtn) {
-                    declineInviteBtn.addEventListener('click', () => {
-                        this.declinePrivateChatInvite();
-                    });
-                }
-
-                const closePrivateChatBtn = document.getElementById('closePrivateChatBtn');
-                if (closePrivateChatBtn) {
-                    closePrivateChatBtn.addEventListener('click', () => {
-                        this.closePrivateChat();
-                    });
-                }
-
-                const privateMessageInput = document.getElementById('privateMessageInput');
-                const privateSendBtn = document.getElementById('privateSendBtn');
-                
-                if (privateMessageInput && privateSendBtn) {
-                    // Send private message on button click
-                    privateSendBtn.addEventListener('click', () => {
-                        this.sendPrivateMessage();
-                    });
-                    
-                    // Send private message on Enter key
-                    privateMessageInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            this.sendPrivateMessage();
-                        }
-                    });
-
-                    // Handle private message input state
-                    privateMessageInput.addEventListener('input', () => {
-                        const hasText = privateMessageInput.value.trim().length > 0;
-                        privateSendBtn.disabled = !hasText;
-                        this.resizePrivateTextarea();
-                    });
-                }
-
-                // Close private chat modal when clicking outside
-                const privateChatModal = document.getElementById('privateChatModal');
-                if (privateChatModal) {
-                    privateChatModal.addEventListener('click', (e) => {
-                        if (e.target === privateChatModal) {
-                            this.closePrivateChat();
-                        }
-                    });
-                }
-
-                // Close private invite modal when clicking outside
-                const privateInviteModal = document.getElementById('privateInviteModal');
-                if (privateInviteModal) {
-                    privateInviteModal.addEventListener('click', (e) => {
-                        if (e.target === privateInviteModal) {
-                            this.hidePrivateChatInvite();
-                        }
-                    });
-                }
-
                 // Initial button state
                 this.sendBtn.disabled = true;
 
@@ -526,7 +434,12 @@
                     <div class="message-reactions">
                         ${reactionsHtml}
                         <button class="reaction-btn" data-message-id="${messageId}">
-                            😀
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                                <circle cx="9" cy="10" r="1.2"/>
+                                <circle cx="15" cy="10" r="1.2"/>
+                                <path d="M8 14c1.2 1.5 3 2.2 4 2.2s2.8-.7 4-2.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
                         </button>
                     </div>
                 `;
@@ -786,7 +699,12 @@
                 const reactionsHtml = this.createReactionsHtml(reactions, messageId);
                 reactionsContainer.innerHTML = reactionsHtml + `
                     <button class="reaction-btn" data-message-id="${messageId}">
-                        😀
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="9" cy="10" r="1.2"/>
+                            <circle cx="15" cy="10" r="1.2"/>
+                            <path d="M8 14c1.2 1.5 3 2.2 4 2.2s2.8-.7 4-2.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
                     </button>
                 `;
 
@@ -861,7 +779,9 @@
 
             updateConnectionStatus(message) {
                 debugLog(`🔗 Connection status: ${message}`);
-                this.connectionStatus.textContent = message;
+                const greenDot = `<svg width="10" height="10" viewBox="0 0 10 10" style="vertical-align: 0; margin-left: 4px;"><circle cx="5" cy="5" r="5" fill="#48bb78"/></svg>`;
+                const safeHtml = this.escapeHtml(message).replace('🟢', greenDot);
+                this.connectionStatus.innerHTML = safeHtml;
                 
                 let welcomeMessage = this.messagesContainer.querySelector('.welcome-message');
                 if (!welcomeMessage) {
@@ -874,7 +794,14 @@
 
             updateUserCount(count) {
                 debugLog(`👥 User count: ${count}`);
-                this.userCountElement.textContent = `👥 ${count} online`;
+                this.userCountElement.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; margin-right: 4px;">
+                        <circle cx="9" cy="8" r="3"/>
+                        <path d="M3 18c0-3 3-5 6-5s6 2 6 5v1H3v-1z"/>
+                        <circle cx="17" cy="9" r="2.5"/>
+                        <path d="M14.5 18c0-2 2.5-3.5 4.5-3.5S23 16 23 18v1h-8.5v-1z"/>
+                    </svg>
+                    ${count} online`;
             }
 
             showOnlineUsersModal() {
@@ -883,13 +810,19 @@
                 const usersList = document.getElementById('onlineUsersList');
                 
                 if (modal && usersList) {
-                    // Request online users list from server
+                    // Request current online users list from server if connected
                     if (this.isConnected && this.socket) {
+                        debugLog('📡 Requesting current online users list from server');
                         this.socket.emit('get online users');
+                        
+                        // Add a small delay to allow server response, then populate with current data
+                        setTimeout(() => {
+                            this.populateOnlineUsersList(usersList);
+                        }, 100);
+                    } else {
+                        // Populate the users list with current data immediately for local mode
+                        this.populateOnlineUsersList(usersList);
                     }
-                    
-                    // Populate the users list
-                    this.populateOnlineUsersList(usersList);
                     
                     // Show the modal
                     modal.classList.add('show');
@@ -909,6 +842,7 @@
 
             populateOnlineUsersList(usersListElement) {
                 debugLog(`👥 Populating online users list with ${this.onlineUsers.size} users`);
+                debugLog(`👥 Current online users: ${Array.from(this.onlineUsers).join(', ')}`);
                 
                 // Clear existing list
                 usersListElement.innerHTML = '';
@@ -936,38 +870,34 @@
                     const isCurrentUser = username === this.username;
                     
                     userItem.innerHTML = `
+                        <div class="online-user-avatar">
+                            ${firstLetter}
+                        </div>
                         <div class="online-user-info">
-                            <div class="online-user-avatar">
-                                ${firstLetter}
+                            <div class="online-user-name">
+                                ${this.escapeHtml(username)}
+                                ${isCurrentUser ? ' (You)' : ''}
                             </div>
-                            <div class="online-user-details">
-                                <div class="online-user-name">
-                                    ${this.escapeHtml(username)}
-                                    ${isCurrentUser ? ' (You)' : ''}
-                                </div>
-                                <div class="online-user-status">
-                                    <div class="online-indicator"></div>
-                                    Online now
-                                </div>
+                            <div class="online-user-status">
+                                <div class="online-indicator"></div>
+                                Online now
                             </div>
                         </div>
-                        ${!isCurrentUser ? `
-                            <button class="invite-chat-btn" data-username="${this.escapeHtml(username)}">
-                                💬 Invite
-                            </button>
-                        ` : ''}
                     `;
-                    
-                    // Add event listener for invite button
-                    if (!isCurrentUser) {
-                        const inviteBtn = userItem.querySelector('.invite-chat-btn');
-                        inviteBtn.addEventListener('click', () => {
-                            this.inviteToPrivateChat(username);
-                        });
-                    }
                     
                     usersListElement.appendChild(userItem);
                 });
+            }
+
+            // Method to refresh the online users list in the modal
+            refreshOnlineUsersList() {
+                const modal = document.getElementById('onlineUsersModal');
+                const usersList = document.getElementById('onlineUsersList');
+                
+                if (modal && modal.classList.contains('show') && usersList) {
+                    debugLog('🔄 Refreshing online users list in modal');
+                    this.populateOnlineUsersList(usersList);
+                }
             }
 
             scrollToBottom() {
@@ -994,264 +924,6 @@
                         errorDiv.parentNode.removeChild(errorDiv);
                     }
                 }, 5000);
-            }
-
-            updateOnlineUsersList(users) {
-                debugLog(`👥 Updating online users list: ${users.length} users`);
-                this.onlineUsers.clear();
-                users.forEach(username => this.onlineUsers.add(username));
-                
-                // Update user count
-                this.updateUserCount(this.onlineUsers.size);
-                
-                // Update modal if open
-                const modal = document.getElementById('onlineUsersModal');
-                if (modal && modal.classList.contains('show')) {
-                    const usersList = document.getElementById('onlineUsersList');
-                    if (usersList) {
-                        this.populateOnlineUsersList(usersList);
-                    }
-                }
-            }
-
-            // Private chat methods
-            inviteToPrivateChat(targetUsername) {
-                debugLog(`💬 Inviting ${targetUsername} to private chat`);
-                
-                if (this.isConnected && this.socket) {
-                    this.socket.emit('invite to private chat', {
-                        targetUsername: targetUsername
-                    });
-                } else {
-                    this.showError('Not connected to server');
-                }
-            }
-
-            showPrivateChatInvite(fromUsername, timestamp) {
-                debugLog(`💬 Showing private chat invite from ${fromUsername}`);
-                
-                this.pendingInvite = { fromUsername, timestamp };
-                
-                const modal = document.getElementById('privateInviteModal');
-                const inviteMessage = document.getElementById('inviteMessage');
-                
-                if (modal && inviteMessage) {
-                    inviteMessage.innerHTML = `
-                        <strong>${this.escapeHtml(fromUsername)}</strong> wants to start a private chat with you.
-                    `;
-                    modal.classList.add('show');
-                    document.body.style.overflow = 'hidden';
-                }
-            }
-
-            hidePrivateChatInvite() {
-                debugLog('💬 Hiding private chat invite');
-                
-                const modal = document.getElementById('privateInviteModal');
-                if (modal) {
-                    modal.classList.remove('show');
-                    document.body.style.overflow = '';
-                }
-                
-                this.pendingInvite = null;
-            }
-
-            acceptPrivateChatInvite() {
-                debugLog('💬 Accepting private chat invite');
-                
-                if (!this.pendingInvite) {
-                    debugLog('⚠ No pending invite to accept');
-                    return;
-                }
-
-                if (this.isConnected && this.socket) {
-                    this.socket.emit('accept private chat', {
-                        fromUsername: this.pendingInvite.fromUsername
-                    });
-                } else {
-                    this.showError('Not connected to server');
-                }
-
-                this.hidePrivateChatInvite();
-            }
-
-            declinePrivateChatInvite() {
-                debugLog('💬 Declining private chat invite');
-                this.hidePrivateChatInvite();
-            }
-
-            openPrivateChat(chatId, withUsername) {
-                debugLog(`💬 Opening private chat with ${withUsername} (ID: ${chatId})`);
-                
-                this.currentPrivateChat = { chatId, withUsername };
-                
-                const modal = document.getElementById('privateChatModal');
-                const chatWithElement = document.getElementById('privateChatWith');
-                
-                if (modal && chatWithElement) {
-                    chatWithElement.textContent = `Chat with ${this.escapeHtml(withUsername)}`;
-                    modal.classList.add('show');
-                    document.body.style.overflow = 'hidden';
-                    
-                    // Initialize or get chat data
-                    if (!this.privateChats.has(chatId)) {
-                        this.privateChats.set(chatId, {
-                            messages: [],
-                            withUsername: withUsername
-                        });
-                    }
-                    
-                    // Load existing messages
-                    this.loadPrivateChatMessages(chatId);
-                }
-            }
-
-            closePrivateChat() {
-                debugLog('💬 Closing private chat');
-                
-                const modal = document.getElementById('privateChatModal');
-                if (modal) {
-                    modal.classList.remove('show');
-                    document.body.style.overflow = '';
-                }
-                
-                this.currentPrivateChat = null;
-            }
-
-            loadPrivateChatHistory(chatId, messages, withUsername) {
-                debugLog(`💬 Loading private chat history for ${chatId}`);
-                
-                this.privateChats.set(chatId, {
-                    messages: messages,
-                    withUsername: withUsername
-                });
-                
-                if (this.currentPrivateChat && this.currentPrivateChat.chatId === chatId) {
-                    this.loadPrivateChatMessages(chatId);
-                }
-            }
-
-            loadPrivateChatMessages(chatId) {
-                const chat = this.privateChats.get(chatId);
-                if (!chat) return;
-                
-                const messagesContainer = document.getElementById('privateChatMessages');
-                if (!messagesContainer) return;
-                
-                // Clear existing messages
-                messagesContainer.innerHTML = '';
-                
-                // Add messages
-                chat.messages.forEach(msg => {
-                    this.addPrivateMessageToUI(chatId, msg.username, msg.message, msg.username === this.username, msg.timestamp, msg.id);
-                });
-                
-                this.scrollPrivateChatToBottom();
-            }
-
-            addPrivateMessage(chatId, username, message, isMyMessage, timestamp, messageId) {
-                debugLog(`💬 Adding private message: ${username}: ${message}`);
-                
-                // Store message in chat data
-                if (!this.privateChats.has(chatId)) {
-                    this.privateChats.set(chatId, {
-                        messages: [],
-                        withUsername: username === this.username ? this.currentPrivateChat?.withUsername : username
-                    });
-                }
-                
-                const chat = this.privateChats.get(chatId);
-                chat.messages.push({
-                    id: messageId,
-                    username: username,
-                    message: message,
-                    timestamp: timestamp,
-                    isMyMessage: isMyMessage
-                });
-                
-                // Keep only last 50 messages
-                if (chat.messages.length > 50) {
-                    chat.messages = chat.messages.slice(-50);
-                }
-                
-                // Add to UI if this chat is currently open
-                if (this.currentPrivateChat && this.currentPrivateChat.chatId === chatId) {
-                    this.addPrivateMessageToUI(chatId, username, message, isMyMessage, timestamp, messageId);
-                }
-            }
-
-            addPrivateMessageToUI(chatId, username, message, isMyMessage, timestamp, messageId) {
-                const messagesContainer = document.getElementById('privateChatMessages');
-                if (!messagesContainer) return;
-                
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `private-message ${isMyMessage ? 'private-my-message' : 'private-other-message'}`;
-                messageDiv.setAttribute('data-message-id', String(messageId));
-                
-                const messageTime = timestamp ? new Date(timestamp) : new Date();
-                const time = messageTime.toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    hour12: false 
-                });
-                
-                messageDiv.innerHTML = `
-                    <div class="message-header">
-                        <span class="message-username">${this.escapeHtml(username)}</span>
-                        <span class="message-time">${time}</span>
-                    </div>
-                    <div class="message-text">${this.escapeHtml(message)}</div>
-                `;
-                
-                messagesContainer.appendChild(messageDiv);
-                this.scrollPrivateChatToBottom();
-            }
-
-            sendPrivateMessage() {
-                if (!this.currentPrivateChat) {
-                    debugLog('⚠ No active private chat');
-                    return;
-                }
-                
-                const privateMessageInput = document.getElementById('privateMessageInput');
-                const messageText = privateMessageInput.value.trim();
-                
-                if (!messageText) {
-                    debugLog('⚠️ Attempted to send empty private message');
-                    return;
-                }
-
-                debugLog(`💬 Sending private message: "${messageText}"`);
-                
-                if (this.isConnected && this.socket) {
-                    this.socket.emit('private message', {
-                        chatId: this.currentPrivateChat.chatId,
-                        message: messageText,
-                        toUsername: this.currentPrivateChat.withUsername
-                    });
-                } else {
-                    this.showError('Not connected to server');
-                }
-
-                // Clear input
-                privateMessageInput.value = '';
-                privateMessageInput.style.height = 'auto';
-                document.getElementById('privateSendBtn').disabled = true;
-            }
-
-            resizePrivateTextarea() {
-                const privateMessageInput = document.getElementById('privateMessageInput');
-                if (privateMessageInput) {
-                    privateMessageInput.style.height = 'auto';
-                    privateMessageInput.style.height = Math.min(privateMessageInput.scrollHeight, 100) + 'px';
-                }
-            }
-
-            scrollPrivateChatToBottom() {
-                const messagesContainer = document.getElementById('privateChatMessages');
-                if (messagesContainer) {
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }
             }
         }
 
