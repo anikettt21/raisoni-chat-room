@@ -21,6 +21,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            color: #2d3748;
         }
 
         .chat-header {
@@ -31,6 +32,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            min-height: 64px;
         }
 
         .chat-title {
@@ -65,6 +67,7 @@
             padding: 0.25rem 0.5rem;
             border-radius: 6px;
             transition: background-color 0.2s;
+            white-space: nowrap;
         }
 
         .user-count:hover {
@@ -79,6 +82,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
+            min-height: 0;
         }
 
         .messages-container::-webkit-scrollbar {
@@ -95,11 +99,12 @@
         }
 
         .message {
-            max-width: 70%;
+            max-width: min(70%, 500px);
             padding: 0.75rem 1rem;
             border-radius: 12px;
             word-wrap: break-word;
             animation: slideIn 0.3s ease-out;
+            position: relative;
         }
 
         @keyframes slideIn {
@@ -144,6 +149,7 @@
             font-size: 0.875rem;
             line-height: 1.4;
             margin-bottom: 0.5rem;
+            word-break: break-word;
         }
 
         .message-reactions {
@@ -161,6 +167,9 @@
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid rgba(255, 255, 255, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
         .other-message .reaction-badge {
@@ -220,6 +229,8 @@
             position: fixed;
             z-index: 1000;
             animation: fadeIn 0.2s ease-out;
+            max-width: calc(100vw - 20px);
+            overflow-x: auto;
         }
 
         @keyframes fadeIn {
@@ -240,6 +251,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .reaction-option:hover {
@@ -308,6 +320,7 @@
             display: flex;
             gap: 0.75rem;
             align-items: flex-end;
+            min-height: 72px;
         }
 
         .message-input {
@@ -345,6 +358,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            flex-shrink: 0;
         }
 
         .send-btn:hover:not(:disabled) {
@@ -372,6 +386,7 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
+            padding: 20px;
         }
 
         .online-users-modal.show {
@@ -384,8 +399,8 @@
             border-radius: 12px;
             padding: 1.5rem;
             max-width: 320px;
-            width: 90%;
-            max-height: 70vh;
+            width: 100%;
+            max-height: calc(100vh - 40px);
             overflow-y: auto;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
@@ -452,16 +467,19 @@
             color: white;
             font-weight: 600;
             font-size: 0.875rem;
+            flex-shrink: 0;
         }
 
         .user-details {
             flex: 1;
+            min-width: 0;
         }
 
         .user-name {
             font-weight: 500;
             color: #2d3748;
             font-size: 0.875rem;
+            word-break: break-word;
         }
 
         .user-status {
@@ -477,11 +495,28 @@
             height: 6px;
             background: #48bb78;
             border-radius: 50%;
+            flex-shrink: 0;
         }
 
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            text-align: center;
+            font-size: 0.875rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Responsive design improvements */
         @media (max-width: 768px) {
             .chat-header {
                 padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                min-height: auto;
             }
 
             .chat-title {
@@ -490,25 +525,176 @@
 
             .user-info {
                 font-size: 0.75rem;
-                gap: 0.75rem;
+                gap: 0.5rem;
             }
 
             .messages-container {
                 padding: 0.75rem;
+                gap: 0.5rem;
             }
 
             .message {
-                max-width: 85%;
+                max-width: min(85%, 400px);
                 padding: 0.625rem 0.875rem;
+            }
+
+            .message-text {
+                font-size: 0.8125rem;
             }
 
             .input-container {
                 padding: 0.75rem;
+                gap: 0.5rem;
             }
 
             .send-btn {
                 width: 36px;
                 height: 36px;
+            }
+
+            .reaction-menu {
+                max-width: calc(100vw - 40px);
+                left: 20px !important;
+                right: 20px;
+                width: auto;
+            }
+
+            .modal-content {
+                margin: 20px;
+                padding: 1.25rem;
+            }
+
+            .user-count {
+                order: -1;
+                width: 100%;
+                text-align: center;
+                padding: 0.5rem;
+                background: #f8fafc;
+                border-radius: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-header {
+                padding: 0.5rem;
+            }
+
+            .messages-container {
+                padding: 0.5rem;
+            }
+
+            .input-container {
+                padding: 0.5rem;
+            }
+
+            .message {
+                max-width: 90%;
+                padding: 0.5rem 0.75rem;
+            }
+
+            .reaction-badge {
+                font-size: 0.6875rem;
+                padding: 0.0625rem 0.375rem;
+            }
+
+            .reaction-option {
+                width: 28px;
+                height: 28px;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .message {
+                border-width: 2px;
+            }
+
+            .my-message {
+                border: 2px solid #4c51bf;
+            }
+
+            .other-message {
+                border: 2px solid #2d3748;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            .message, .reaction-menu, .online-users-modal {
+                animation: none;
+            }
+
+            .reaction-badge:hover, .reaction-option:hover, .send-btn:hover {
+                transform: none;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1a202c;
+                color: #e2e8f0;
+            }
+
+            .chat-header {
+                background: #2d3748;
+                border-color: #4a5568;
+            }
+
+            .chat-title {
+                color: #e2e8f0;
+            }
+
+            .messages-container {
+                background: #1a202c;
+            }
+
+            .other-message {
+                background: #2d3748;
+                border-color: #4a5568;
+                color: #e2e8f0;
+            }
+
+            .system-message, .typing-indicator {
+                background: #2d3748;
+                border-color: #4a5568;
+                color: #a0aec0;
+            }
+
+            .input-container {
+                background: #2d3748;
+                border-color: #4a5568;
+            }
+
+            .message-input {
+                background: #1a202c;
+                border-color: #4a5568;
+                color: #e2e8f0;
+            }
+
+            .message-input::placeholder {
+                color: #718096;
+            }
+
+            .modal-content {
+                background: #2d3748;
+                color: #e2e8f0;
+            }
+
+            .user-item {
+                background: #1a202c;
+                border-color: #4a5568;
+            }
+
+            .reaction-menu {
+                background: #2d3748;
+                border-color: #4a5568;
+            }
+
+            .reaction-option {
+                background: #1a202c;
+                border-color: #4a5568;
             }
         }
     </style>
@@ -533,8 +719,9 @@
             class="message-input"
             placeholder="Type your message..." 
             rows="1"
+            maxlength="500"
         ></textarea>
-        <button id="sendBtn" class="send-btn" disabled>
+        <button id="sendBtn" class="send-btn" disabled aria-label="Send message">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
             </svg>
@@ -545,7 +732,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">Online Users</div>
-                <button class="close-btn" id="closeModalBtn">×</button>
+                <button class="close-btn" id="closeModalBtn" aria-label="Close modal">×</button>
             </div>
             <div class="user-list" id="onlineUsersList"></div>
         </div>
@@ -554,7 +741,7 @@
     <script>
         // Debug logging function
         function debugLog(message) {
-            console.log(message);
+            console.log(`[Chat] ${message}`);
         }
 
         class SimpleChatApp {
@@ -578,7 +765,7 @@
                 
                 this.availableReactions = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🎉'];
                 
-                debugLog('Initializing simple chat app...');
+                debugLog('Initializing chat app...');
                 this.initializeEventListeners();
                 this.initializeSocket();
             }
@@ -607,7 +794,14 @@
                 }
 
                 try {
-                    this.socket = io();
+                    this.socket = io({
+                        transports: ['websocket', 'polling'],
+                        timeout: 20000,
+                        reconnection: true,
+                        reconnectionDelay: 1000,
+                        reconnectionAttempts: 5,
+                        maxReconnectionAttempts: 5
+                    });
                     
                     this.socket.on('connect', () => {
                         debugLog('✅ Connected to server');
@@ -621,13 +815,13 @@
                         debugLog(`Joining chat as: ${this.username}`);
                         this.socket.emit('user joined', {
                             username: this.username,
-                            timestamp: new Date()
+                            timestamp: new Date().toISOString()
                         });
                     });
 
                     this.socket.on('chat message', (data) => {
                         debugLog(`📩 Received message from ${data.username}: ${data.message}`);
-                        this.addMessage(data.username, data.message, data.username === this.username, data.timestamp, data.id, data.reactions);
+                        this.addMessage(data.username, data.message, data.username === this.username, data.timestamp, data.id, data.reactions || {});
                     });
 
                     this.socket.on('user joined', (data) => {
@@ -663,6 +857,16 @@
                         this.refreshOnlineUsersList();
                     });
 
+                    this.socket.on('online users list', (data) => {
+                        debugLog(`👥 Received online users list: ${data.users.length} users`);
+                        this.onlineUsers.clear();
+                        data.users.forEach(username => {
+                            this.onlineUsers.add(username);
+                        });
+                        this.updateUserCount(this.onlineUsers.size);
+                        this.refreshOnlineUsersList();
+                    });
+
                     this.socket.on('user typing', (data) => {
                         if (data.username !== this.username) {
                             this.showTypingIndicator(data.username);
@@ -688,13 +892,13 @@
                     });
 
                     this.socket.on('error', (errorData) => {
-                        debugLog(`⚠ Server error: ${errorData.message}`);
+                        debugLog(`⚠️ Server error: ${errorData.message}`);
                         this.showError(errorData.message);
                     });
 
                     this.socket.on('connect_error', (error) => {
-                        debugLog(`⚠ Connection error: ${error.message}`);
-                        this.handleConnectionError();
+                        debugLog(`⚠️ Connection error: ${error.message}`);
+                        this.handleConnectionError(error);
                     });
 
                     this.socket.on('disconnect', (reason) => {
@@ -708,7 +912,7 @@
                     });
 
                 } catch (error) {
-                    debugLog(`⚠ Socket.IO initialization failed: ${error.message}`);
+                    debugLog(`⚠️ Socket.IO initialization failed: ${error.message}`);
                     this.fallbackToLocalMode();
                 }
             }
@@ -725,20 +929,15 @@
                 this.addSystemMessage('Running in local mode - messages will only be visible to you');
             }
 
-            handleConnectionError() {
+            handleConnectionError(error) {
                 this.isConnected = false;
                 this.reconnectAttempts++;
                 
                 if (this.reconnectAttempts <= this.maxReconnectAttempts) {
                     debugLog(`🔄 Retrying connection (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
                     this.updateConnectionStatus(`Reconnecting (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-                    setTimeout(() => {
-                        if (this.socket) {
-                            this.socket.connect();
-                        }
-                    }, 2000 * this.reconnectAttempts);
                 } else {
-                    debugLog('⚠ Max reconnection attempts reached, switching to local mode');
+                    debugLog('⚠️ Max reconnection attempts reached, switching to local mode');
                     this.updateConnectionStatus('Connection failed - Local mode');
                     this.fallbackToLocalMode();
                 }
@@ -748,7 +947,7 @@
                 debugLog('Setting up event listeners...');
                 
                 this.sendBtn.addEventListener('click', () => {
-                                            debugLog('📤 Send button clicked');
+                    debugLog('📤 Send button clicked');
                     this.sendMessage();
                 });
                 
@@ -809,11 +1008,24 @@
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
                         this.hideOnlineUsersModal();
+                        this.closeReactionMenu();
                     }
+                });
+
+                // Handle window resize for responsive design
+                window.addEventListener('resize', () => {
+                    this.handleWindowResize();
                 });
 
                 this.sendBtn.disabled = true;
                 debugLog('✅ Event listeners set up');
+            }
+
+            handleWindowResize() {
+                if (this.currentReactionMenu) {
+                    this.closeReactionMenu();
+                }
+                this.scrollToBottom();
             }
 
             resizeTextarea() {
@@ -825,9 +1037,7 @@
                 if (!this.typing) {
                     this.typing = true;
                     
-                    if (!this.isConnected || !this.socket) {
-                        this.showTypingIndicator(this.username);
-                    } else {
+                    if (this.isConnected && this.socket) {
                         this.socket.emit('typing', { username: this.username });
                     }
                 }
@@ -847,8 +1057,6 @@
                     
                     if (this.isConnected && this.socket) {
                         this.socket.emit('stop typing', { username: this.username });
-                    } else {
-                        this.hideTypingIndicator(this.username);
                     }
                 }
                 
@@ -934,7 +1142,7 @@
                     <div class="message-text">${this.escapeHtml(text)}</div>
                     <div class="message-reactions">
                         ${reactionsHtml}
-                        <button class="reaction-btn" data-message-id="${messageId}">
+                        <button class="reaction-btn" data-message-id="${messageId}" aria-label="Add reaction">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                 <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
                                 <circle cx="9" cy="10" r="1.2"/>
@@ -998,7 +1206,7 @@
                 const reactions = this.messageReactions.get(messageId) || {};
                 let currentReaction = null;
                 for (const [reaction, users] of Object.entries(reactions)) {
-                    if (users.includes(this.username)) {
+                    if (users && users.includes(this.username)) {
                         currentReaction = reaction;
                         break;
                     }
@@ -1008,6 +1216,7 @@
                     const button = document.createElement('button');
                     button.className = 'reaction-option';
                     button.textContent = reaction;
+                    button.setAttribute('aria-label', `React with ${reaction}`);
                     
                     if (currentReaction === reaction) {
                         button.classList.add('current-reaction');
@@ -1027,22 +1236,34 @@
                 });
 
                 const triggerRect = triggerElement.getBoundingClientRect();
+                const viewport = {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                };
                 
-                menu.style.position = 'fixed';
-                menu.style.left = `${triggerRect.left}px`;
-                menu.style.top = `${triggerRect.bottom + 5}px`;
-                menu.style.zIndex = '1000';
-
                 document.body.appendChild(menu);
                 const menuRect = menu.getBoundingClientRect();
                 
-                if (menuRect.right > window.innerWidth - 10) {
-                    menu.style.left = `${triggerRect.right - menuRect.width}px`;
+                // Position menu considering viewport boundaries
+                let left = triggerRect.left;
+                let top = triggerRect.bottom + 5;
+                
+                // Adjust horizontal position if menu would overflow
+                if (left + menuRect.width > viewport.width - 10) {
+                    left = Math.max(10, viewport.width - menuRect.width - 10);
                 }
                 
-                if (menuRect.bottom > window.innerHeight - 10) {
-                    menu.style.top = `${triggerRect.top - menuRect.height - 5}px`;
+                // Adjust vertical position if menu would overflow
+                if (top + menuRect.height > viewport.height - 10) {
+                    top = triggerRect.top - menuRect.height - 5;
                 }
+                
+                // Ensure menu stays within viewport bounds
+                left = Math.max(10, Math.min(left, viewport.width - menuRect.width - 10));
+                top = Math.max(10, Math.min(top, viewport.height - menuRect.height - 10));
+                
+                menu.style.left = `${left}px`;
+                menu.style.top = `${top}px`;
 
                 this.currentReactionMenu = menu;
                 debugLog('✅ Reaction menu created and positioned');
@@ -1061,7 +1282,7 @@
                 
                 const reactions = this.messageReactions.get(messageId) || {};
                 for (const [existingReaction, users] of Object.entries(reactions)) {
-                    if (users.includes(this.username)) {
+                    if (users && users.includes(this.username)) {
                         if (existingReaction === reaction) {
                             debugLog(`⚠️ User already has this reaction: ${reaction}`);
                             return;
@@ -1087,25 +1308,12 @@
                 
                 const reactions = this.messageReactions.get(messageId) || {};
                 let hasMyReaction = false;
-                let hasAnyMyReaction = false;
                 
-                for (const [reactionType, users] of Object.entries(reactions)) {
-                    if (users.includes(this.username)) {
-                        hasAnyMyReaction = true;
-                        if (reactionType === reaction) {
-                            hasMyReaction = true;
-                        }
-                    }
+                if (reactions[reaction] && reactions[reaction].includes(this.username)) {
+                    hasMyReaction = true;
                 }
                 
-                let action;
-                if (hasMyReaction) {
-                    action = 'remove';
-                } else if (hasAnyMyReaction) {
-                    action = 'add';
-                } else {
-                    action = 'add';
-                }
+                const action = hasMyReaction ? 'remove' : 'add';
                 
                 if (this.isConnected && this.socket) {
                     this.socket.emit('message reaction', {
@@ -1124,27 +1332,30 @@
                 
                 const messageElement = document.querySelector(`[data-message-id="${String(messageId)}"]`);
                 if (!messageElement) {
-                    debugLog(`⚠ Message element not found for ID: ${messageId}`);
+                    debugLog(`⚠️ Message element not found for ID: ${messageId}`);
                     return;
                 }
 
                 let reactionsContainer = messageElement.querySelector('.message-reactions');
                 if (!reactionsContainer) {
-                    debugLog(`⚠ Reactions container not found for message ${messageId}`);
+                    debugLog(`⚠️ Reactions container not found for message ${messageId}`);
                     return;
                 }
 
                 let reactions = this.messageReactions.get(messageId) || {};
 
                 if (action === 'add') {
+                    // Remove any existing reactions by this user first (one reaction per user)
                     for (const [existingReaction, users] of Object.entries(reactions)) {
-                        const userIndex = users.indexOf(username);
-                        if (userIndex > -1) {
-                            users.splice(userIndex, 1);
-                            debugLog(`Removed existing reaction ${existingReaction} by ${username}`);
-                            
-                            if (users.length === 0) {
-                                delete reactions[existingReaction];
+                        if (users && Array.isArray(users)) {
+                            const userIndex = users.indexOf(username);
+                            if (userIndex > -1) {
+                                users.splice(userIndex, 1);
+                                debugLog(`Removed existing reaction ${existingReaction} by ${username}`);
+                                
+                                if (users.length === 0) {
+                                    delete reactions[existingReaction];
+                                }
                             }
                         }
                     }
@@ -1157,7 +1368,7 @@
                         }
                     }
                 } else if (action === 'remove') {
-                    if (reactions[reaction]) {
+                    if (reactions[reaction] && Array.isArray(reactions[reaction])) {
                         const index = reactions[reaction].indexOf(username);
                         if (index > -1) {
                             reactions[reaction].splice(index, 1);
@@ -1172,7 +1383,7 @@
 
                 const reactionsHtml = this.createReactionsHtml(reactions, messageId);
                 reactionsContainer.innerHTML = reactionsHtml + `
-                    <button class="reaction-btn" data-message-id="${messageId}">
+                    <button class="reaction-btn" data-message-id="${messageId}" aria-label="Add reaction">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                             <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
                             <circle cx="9" cy="10" r="1.2"/>
@@ -1268,6 +1479,7 @@
             updateUserCount(count) {
                 debugLog(`👥 User count: ${count}`);
                 this.userCountElement.textContent = `${count} online`;
+                this.userCountElement.setAttribute('aria-label', `${count} users online. Click to view list.`);
             }
 
             showOnlineUsersModal() {
@@ -1289,6 +1501,12 @@
                     
                     modal.classList.add('show');
                     document.body.style.overflow = 'hidden';
+                    
+                    // Focus management for accessibility
+                    const closeBtn = modal.querySelector('.close-btn');
+                    if (closeBtn) {
+                        closeBtn.focus();
+                    }
                 }
             }
 
@@ -1299,6 +1517,9 @@
                 if (modal) {
                     modal.classList.remove('show');
                     document.body.style.overflow = '';
+                    
+                    // Return focus to user count button
+                    this.userCountElement.focus();
                 }
             }
 
@@ -1356,38 +1577,58 @@
             }
 
             scrollToBottom() {
-                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                requestAnimationFrame(() => {
+                    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                });
             }
 
             escapeHtml(text) {
+                if (!text) return '';
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
             }
 
             showError(message) {
-                debugLog(`⚠ Error: ${message}`);
+                debugLog(`⚠️ Error: ${message}`);
                 const errorDiv = document.createElement('div');
-                errorDiv.className = 'system-message';
-                errorDiv.style.background = '#fed7d7';
-                errorDiv.style.color = '#c53030';
-                errorDiv.style.border = '1px solid #feb2b2';
-                errorDiv.textContent = `Error: ${message}`;
+                errorDiv.className = 'error-message';
+                errorDiv.setAttribute('role', 'alert');
+                errorDiv.innerHTML = `
+                    <strong>Error:</strong> ${this.escapeHtml(message)}
+                `;
                 this.messagesContainer.appendChild(errorDiv);
                 this.scrollToBottom();
                 
+                // Auto remove error after 5 seconds
                 setTimeout(() => {
                     if (errorDiv.parentNode) {
-                        errorDiv.parentNode.removeChild(errorDiv);
+                        errorDiv.remove();
                     }
                 }, 5000);
             }
         }
 
+        // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            debugLog('🚀 DOM loaded, initializing simple chat...');
+            debugLog('🚀 DOM loaded, initializing chat...');
             window.chatApp = new SimpleChatApp();
         });
-    </script>
-</body>
-</html>
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (window.chatApp) {
+                if (document.hidden) {
+                    window.chatApp.stopTyping();
+                }
+            }
+        });
+
+        // Handle beforeunload for cleanup
+        window.addEventListener('beforeunload', () => {
+            if (window.chatApp && window.chatApp.socket) {
+                window.chatApp.socket.emit('user leaving', { 
+                    username: window.chatApp.username 
+                });
+            }
+        });
