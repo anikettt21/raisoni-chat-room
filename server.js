@@ -163,7 +163,17 @@ function updateMessageReactions(messageId, reaction, username, action) {
 
 function broadcastUserCount() {
   const count = connectedUsers.size;
+  const onlineUsers = getOnlineUsers();
+  
+  console.log(`Broadcasting user count: ${count}, users: ${onlineUsers.join(', ')}`);
+  
+  // Send both count and full user list
   io.emit('user count', count);
+  io.emit('online users', onlineUsers);
+}
+
+function getOnlineUsers() {
+  return Array.from(connectedUsers.values()).map(user => user.username);
 }
 
 function cleanupRateLimits() {
@@ -240,10 +250,6 @@ function addPrivateMessageToHistory(chatId, messageData) {
   return true;
 }
 
-function getOnlineUsers() {
-  return Array.from(connectedUsers.values()).map(user => user.username);
-}
-
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
   
@@ -290,12 +296,37 @@ io.on("connection", (socket) => {
         timestamp: new Date().toISOString()
       });
 
+      // Send current online users to the new user immediately
+      const onlineUsers = getOnlineUsers();
+      socket.emit('online users', onlineUsers);
+      
+      // Broadcast updated user count and online users list to all clients
       broadcastUserCount();
       
-      console.log(`${userData.username} joined the chat`);
+      console.log(`${userData.username} joined the chat. Total users: ${connectedUsers.size}`);
     } catch (error) {
       console.error('Error handling user join:', error);
       socket.emit('error', { message: 'Failed to join chat' });
+    }
+  });
+
+  // Handle explicit request for online users (for modal)
+  socket.on('get online users', () => {
+    try {
+      const userData = connectedUsers.get(socket.id);
+      if (!userData) {
+        socket.emit('error', { message: 'User not found. Please refresh.' });
+        return;
+      }
+      
+      const onlineUsers = getOnlineUsers();
+      console.log(`Sending online users to ${userData.username}: ${onlineUsers.join(', ')}`);
+      
+      // Send the current online users list to this specific client
+      socket.emit('online users', onlineUsers);
+    } catch (error) {
+      console.error('Error getting online users:', error);
+      socket.emit('error', { message: 'Failed to get online users' });
     }
   });
 
@@ -439,6 +470,9 @@ io.on("connection", (socket) => {
         timestamp: new Date().toISOString()
       });
 
+      // Update online users list for all clients
+      broadcastUserCount();
+
       console.log(`${oldUsername} changed username to ${newUsername}`);
     } catch (error) {
       console.error('Error handling username change:', error);
@@ -446,18 +480,6 @@ io.on("connection", (socket) => {
   });
 
   // Private chat events
-  socket.on('get online users', () => {
-    try {
-      const userData = connectedUsers.get(socket.id);
-      if (!userData) return;
-      
-      const onlineUsers = getOnlineUsers();
-      socket.emit('online users list', { users: onlineUsers });
-    } catch (error) {
-      console.error('Error getting online users:', error);
-    }
-  });
-
   socket.on('invite to private chat', (data) => {
     try {
       const userData = connectedUsers.get(socket.id);
@@ -661,9 +683,11 @@ io.on("connection", (socket) => {
         
         // Remove from connected users
         connectedUsers.delete(socket.id);
+        
+        // Broadcast updated user count and online users list
         broadcastUserCount();
         
-        console.log(`${userData.username} left the chat`);
+        console.log(`${userData.username} left the chat. Remaining users: ${connectedUsers.size}`);
       }
 
       // Clean up rate limiting for this user

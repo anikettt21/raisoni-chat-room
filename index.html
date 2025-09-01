@@ -3,183 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Raisoni Gang Chat</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: #333;
-    }
-
-    .container {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #2d3748;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.025em;
-    }
-
-    p {
-      color: #718096;
-      font-size: 1rem;
-      margin-bottom: 2rem;
-      line-height: 1.5;
-    }
-
-    .input-group {
-      margin-bottom: 1.5rem;
-    }
-
-    label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #4a5568;
-      margin-bottom: 0.5rem;
-      text-align: left;
-    }
-
-    input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: all 0.2s;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    input::placeholder {
-      color: #a0aec0;
-    }
-
-    .join-btn {
-      width: 100%;
-      background: #667eea;
-      color: white;
-      border: none;
-      padding: 0.875rem 1.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .join-btn:hover {
-      background: #5a67d8;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-
-    .join-btn:active {
-      transform: translateY(0);
-    }
-
-    footer {
-      position: absolute;
-      bottom: 1rem;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 0.875rem;
-      font-weight: 400;
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 2rem;
-        margin: 1rem;
-      }
-      
-      h1 {
-        font-size: 1.5rem;
-      }
-    }
-  </style>
+  <title>Raisoni Gang Chat Room</title>
+  <link rel="stylesheet" href="chat.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Raisoni Gang Chat</h1>
-    <p>Connect with your friends and start chatting!</p>
+  <main class="hero-card">
+    <h1>Raisoni Gang Chat Room</h1>
+    <p>Jitni chahe utani Karo bakchodi 😡</p>
 
-    <div class="input-group">
-      <label for="nickname">Your Name</label>
-      <input 
-        type="text" 
-        id="nickname" 
-        placeholder="Enter your name (optional)"
-        maxlength="20">
-    </div>
+    <input 
+      type="text" 
+      class="nickname-input" 
+      id="nickname" 
+      placeholder="Enter your nickname (optional)">
      
-    <a href="chat.html" class="join-btn" onclick="saveNickname()">Join Chat Room</a>
-  </div>
+    <a href="chat.html" class="join-btn" onclick="saveNickname()">Join Chat</a>
+  </main>
 
-  <footer>Made by Aniket Gade</footer>
-
-  <script>
-    function saveNickname() {
-      try {
-        const input = document.getElementById("nickname").value.trim();
-        let nickname = input || "Anonymous" + Math.floor(Math.random() * 1000);
-        localStorage.setItem("nickname", nickname);
-        localStorage.setItem("userNickname", nickname);
-      } catch (error) {
-        console.error("Failed to save nickname:", error);
-      }
-    }
-
-    function loadSavedNickname() {
-      const savedNickname = localStorage.getItem("nickname");
-      if (savedNickname) {
-        document.getElementById("nickname").value = savedNickname;
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      loadSavedNickname();
-      
-      const nicknameInput = document.getElementById("nickname");
-      nicknameInput.addEventListener('input', function() {
-        localStorage.setItem("userNickname", this.value.trim());
-      });
-      
-      // Allow Enter key to join
-      nicknameInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          saveNickname();
-          window.location.href = 'chat.html';
-        }
-      });
-    });
-  </script>
+  <footer>
+    Made by Aniket Gade !
+  </footer>
+  <script src="main.js"></script>
 </body>
 </html>
