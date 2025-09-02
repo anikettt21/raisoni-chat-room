@@ -973,17 +973,185 @@ body::before {
     --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
+/* Light theme fixes for better visibility */
 @media (prefers-color-scheme: light) {
     :root {
-        --bg: #f6f7fb;
+        --bg: #f8fafc;
         --bg-elev: #ffffff;
-        --text: #0f172a;
+        --text: #1e293b;
+        --text-secondary: #475569;
         --muted: #64748b;
         --primary: #2563eb;
         --primary-soft: rgba(37, 99, 235, 0.10);
         --ring: rgba(37, 99, 235, 0.25);
         --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
         --shadow-md: 0 10px 30px rgba(15, 23, 42, 0.08);
+        --border: rgba(15, 23, 42, 0.15);
+    }
+
+    /* Chat container and header */
+    .chat-container {
+        background: var(--bg-elev) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-md) !important;
+    }
+
+    .chat-header {
+        background: var(--bg-elev) !important;
+        border-bottom: 1px solid var(--border) !important;
+    }
+
+    .chat-title {
+        color: var(--text) !important;
+        text-shadow: none !important;
+    }
+
+    .user-info {
+        color: var(--muted) !important;
+    }
+
+    /* Messages - Fix the main visibility issue */
+    .my-message {
+        background: var(--primary-soft) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    }
+
+    .other-message {
+        background: #f1f5f9 !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    .message-header {
+        color: var(--muted) !important;
+    }
+
+    .message-username {
+        color: var(--text-secondary) !important;
+        font-weight: 600 !important;
+    }
+
+    .message-text {
+        color: var(--text) !important;
+    }
+
+    .message-time {
+        color: var(--muted) !important;
+    }
+
+    /* System messages and status */
+    .system-message,
+    .welcome-message,
+    .typing-indicator {
+        background: #f1f5f9 !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text) !important;
+    }
+
+    /* Input area */
+    .input-container {
+        background: var(--bg-elev) !important;
+        border-top: 1px solid var(--border) !important;
+    }
+
+    #messageInput {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text) !important;
+    }
+
+    #messageInput::placeholder {
+        color: var(--muted) !important;
+    }
+
+    #messageInput:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px var(--ring) !important;
+        background: var(--bg-elev) !important;
+    }
+
+    /* Online users modal */
+    .online-users-content {
+        background: var(--bg-elev) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-md) !important;
+    }
+
+    .online-users-title {
+        color: var(--text) !important;
+    }
+
+    .online-user-item {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    .online-user-name {
+        color: var(--text) !important;
+    }
+
+    .online-user-status {
+        color: var(--muted) !important;
+    }
+
+    /* Reactions */
+    .reaction-badge {
+        background: #f1f5f9 !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    .reaction-badge.my-reaction {
+        background: var(--primary-soft) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important;
+    }
+
+    .reaction-btn {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+        color: var(--muted) !important;
+    }
+
+    .reaction-menu {
+        background: var(--bg-elev) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-md) !important;
+    }
+
+    .reaction-option {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    .reaction-option:hover {
+        background: var(--primary-soft) !important;
+    }
+
+    /* Status indicator */
+    .status-indicator {
+        background: var(--primary-soft) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    }
+
+    /* Presence toasts */
+    .presence-toast {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+    }
+
+    .presence-toast .meta {
+        color: var(--muted) !important;
+    }
+
+    /* Error messages */
+    .error-message {
+        background: #fef2f2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fca5a5 !important;
     }
 }
 
