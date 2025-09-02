@@ -4,6 +4,276 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raisoni Gang</title>
+    <style>
+        /* LIGHT THEME FIX - Add this at the very end of your chat.css file */
+@media (prefers-color-scheme: light) {
+    /* Override all existing light theme styles with higher specificity */
+    
+    /* Body and container */
+    body {
+        background: #f8fafc !important;
+    }
+    
+    body::before {
+        display: none !important;
+    }
+    
+    .chat-container {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1) !important;
+    }
+    
+    /* Header */
+    .chat-header {
+        background: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+    
+    .chat-title {
+        color: #1e293b !important;
+        text-shadow: none !important;
+    }
+    
+    .user-info {
+        color: #64748b !important;
+    }
+    
+    .status-indicator {
+        background: rgba(37, 99, 235, 0.1) !important;
+        color: #1e293b !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    }
+    
+    /* Messages - The main fix */
+    .message.my-message {
+        background: rgba(37, 99, 235, 0.1) !important;
+        color: #1e293b !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    }
+    
+    .message.other-message {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    
+    /* Message content */
+    .message-header {
+        color: #64748b !important;
+    }
+    
+    .message-username {
+        color: #475569 !important;
+        font-weight: 600 !important;
+    }
+    
+    .message-text {
+        color: #1e293b !important;
+        font-weight: 400 !important;
+    }
+    
+    .message-time {
+        color: #64748b !important;
+    }
+    
+    /* System messages */
+    .system-message,
+    .welcome-message,
+    .typing-indicator {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    
+    /* Input area */
+    .input-container {
+        background: #ffffff !important;
+        border-top: 1px solid #e2e8f0 !important;
+    }
+    
+    #messageInput {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #1e293b !important;
+    }
+    
+    #messageInput::placeholder {
+        color: #94a3b8 !important;
+    }
+    
+    #messageInput:focus {
+        background: #ffffff !important;
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    }
+    
+    #sendBtn {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    
+    #sendBtn:disabled {
+        background: #cbd5e1 !important;
+        color: #64748b !important;
+    }
+    
+    /* Reactions */
+    .reaction-badge {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    
+    .reaction-badge.my-reaction {
+        background: rgba(37, 99, 235, 0.1) !important;
+        color: #1e293b !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important;
+    }
+    
+    .reaction-btn {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #64748b !important;
+    }
+    
+    .reaction-btn:hover {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
+    }
+    
+    .reaction-menu {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1) !important;
+    }
+    
+    .reaction-option {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #1e293b !important;
+    }
+    
+    .reaction-option:hover {
+        background: rgba(37, 99, 235, 0.1) !important;
+        border-color: rgba(37, 99, 235, 0.3) !important;
+    }
+    
+    .reaction-option.current-reaction {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        border-color: #2563eb !important;
+    }
+    
+    /* Online users modal */
+    .online-users-modal {
+        background: rgba(15, 23, 42, 0.5) !important;
+    }
+    
+    .online-users-content {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1) !important;
+    }
+    
+    .online-users-title {
+        color: #1e293b !important;
+    }
+    
+    .close-modal-btn {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #64748b !important;
+    }
+    
+    .close-modal-btn:hover {
+        background: #ef4444 !important;
+        color: #ffffff !important;
+    }
+    
+    .online-user-item {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    
+    .online-user-item:hover {
+        background: #f1f5f9 !important;
+    }
+    
+    .online-user-avatar {
+        background: linear-gradient(135deg, #2563eb 0%, #7dd3fc 100%) !important;
+        color: #ffffff !important;
+    }
+    
+    .online-user-name {
+        color: #1e293b !important;
+    }
+    
+    .online-user-status {
+        color: #64748b !important;
+    }
+    
+    .no-users-message {
+        color: #64748b !important;
+    }
+    
+    /* User count clickable */
+    #userCount {
+        background: rgba(37, 99, 235, 0.1) !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+        color: #1e293b !important;
+    }
+    
+    #userCount:hover {
+        background: rgba(37, 99, 235, 0.15) !important;
+    }
+    
+    /* Presence toasts */
+    .presence-toast {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: #1e293b !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    
+    .presence-toast .name {
+        color: #1e293b !important;
+    }
+    
+    .presence-toast .meta {
+        color: #64748b !important;
+    }
+    
+    .presence-toast .close-btn {
+        color: #64748b !important;
+    }
+    
+    .presence-toast .close-btn:hover {
+        background: rgba(148, 163, 184, 0.12) !important;
+        color: #1e293b !important;
+    }
+    
+    /* Error messages */
+    .error-message {
+        background: #fef2f2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fca5a5 !important;
+    }
+    
+    /* Scrollbar */
+    #messagesContainer::-webkit-scrollbar-track {
+        background: #f8fafc !important;
+    }
+    
+    #messagesContainer::-webkit-scrollbar-thumb {
+        background: #cbd5e1 !important;
+    }
+    
+    #messagesContainer::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8 !important;
+    }
+}
+    </style>
     <link rel="stylesheet" href="chat.css">
     <!-- Socket.IO CDN - Load before main script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>

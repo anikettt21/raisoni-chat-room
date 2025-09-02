@@ -1435,3 +1435,417 @@ body::before {
         right: 0.75rem;
     }
 }
+/* COMPLETE LIGHT THEME FIX - Replace the existing light theme section at the end of your chat.css */
+
+@media (prefers-color-scheme: light) {
+    /* Core Variables Override */
+    :root {
+        --bg: #f8fafc !important;
+        --bg-elev: #ffffff !important;
+        --text: #1e293b !important;
+        --text-secondary: #475569 !important;
+        --muted: #64748b !important;
+        --primary: #2563eb !important;
+        --primary-soft: rgba(37, 99, 235, 0.1) !important;
+        --ring: rgba(37, 99, 235, 0.25) !important;
+        --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+        --shadow-md: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+        --border: #e2e8f0 !important;
+    }
+
+    /* Body and Background */
+    body {
+        background: var(--bg) !important;
+        color: var(--text) !important;
+    }
+    
+    body::before {
+        display: none !important;
+    }
+    
+    /* Main Container */
+    .chat-container {
+        background: var(--bg-elev) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-md) !important;
+        color: var(--text) !important;
+    }
+    
+    /* Header Section */
+    .chat-header {
+        background: var(--bg-elev) !important;
+        border-bottom: 1px solid var(--border) !important;
+        color: var(--text) !important;
+    }
+    
+    .chat-title {
+        color: var(--text) !important;
+        text-shadow: none !important;
+        font-weight: 700 !important;
+    }
+    
+    .user-info {
+        color: var(--muted) !important;
+    }
+    
+    .status-indicator {
+        background: var(--primary-soft) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    }
+    
+    /* User Count Clickable */
+    #userCount {
+        background: var(--primary-soft) !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+        color: var(--text) !important;
+    }
+    
+    #userCount:hover {
+        background: rgba(37, 99, 235, 0.15) !important;
+        color: var(--text) !important;
+    }
+    
+    /* Messages - THE MAIN FIX */
+    .message {
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+    }
+    
+    .message.my-message {
+        background: var(--primary-soft) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    }
+    
+    .message.other-message {
+        background: #f1f5f9 !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+    }
+    
+    /* Message Content */
+    .message-header {
+        color: var(--muted) !important;
+    }
+    
+    .message-username {
+        color: var(--text-secondary) !important;
+        font-weight: 600 !important;
+    }
+    
+    .message-text {
+        color: var(--text) !important;
+        font-weight: 400 !important;
+    }
+    
+    .message-time {
+        color: var(--muted) !important;
+    }
+    
+    /* System Messages */
+    .system-message,
+    .welcome-message,
+    .typing-indicator {
+        background: #f1f5f9 !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+    }
+    
+    .system-text,
+    .system-time {
+        color: var(--text) !important;
+    }
+    
+    .typing-user {
+        color: var(--text) !important;
+    }
+    
+    /* Input Area */
+    .input-container {
+        background: var(--bg-elev) !important;
+        border-top: 1px solid var(--border) !important;
+    }
+    
+    #messageInput {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text) !important;
+    }
+    
+    #messageInput::placeholder {
+        color: var(--muted) !important;
+    }
+    
+    #messageInput:focus {
+        background: var(--bg-elev) !important;
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px var(--ring) !important;
+        color: var(--text) !important;
+    }
+    
+    #sendBtn {
+        background: var(--primary) !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    
+    #sendBtn:disabled {
+        background: #cbd5e1 !important;
+        color: var(--muted) !important;
+    }
+    
+    /* Reactions */
+    .reaction-badge {
+        background: #f1f5f9 !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+    }
+    
+    .reaction-badge.my-reaction {
+        background: var(--primary-soft) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important;
+    }
+    
+    .reaction-btn {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+        color: var(--muted) !important;
+    }
+    
+    .reaction-btn:hover {
+        background: #f1f5f9 !important;
+        color: var(--text) !important;
+    }
+    
+    .reaction-menu {
+        background: var(--bg-elev) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-md) !important;
+    }
+    
+    .reaction-option {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text) !important;
+    }
+    
+    .reaction-option:hover {
+        background: var(--primary-soft) !important;
+        border-color: rgba(37, 99, 235, 0.3) !important;
+        color: var(--text) !important;
+    }
+    
+    .reaction-option.current-reaction {
+        background: var(--primary) !important;
+        color: #ffffff !important;
+        border-color: var(--primary) !important;
+    }
+    
+    /* My message reactions override */
+    .my-message .reaction-badge {
+        background: rgba(255, 255, 255, 0.9) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important;
+    }
+    
+    .my-message .reaction-badge.my-reaction {
+        background: var(--primary) !important;
+        color: #ffffff !important;
+        border: 1px solid var(--primary) !important;
+    }
+    
+    .my-message .reaction-btn {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important;
+        color: var(--text) !important;
+    }
+    
+    .my-message .reaction-btn:hover {
+        background: #ffffff !important;
+        color: var(--text) !important;
+    }
+    
+    /* Online Users Modal */
+    .online-users-modal {
+        background: rgba(15, 23, 42, 0.5) !important;
+    }
+    
+    .online-users-content {
+        background: var(--bg-elev) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-md) !important;
+        color: var(--text) !important;
+    }
+    
+    .online-users-title {
+        color: var(--text) !important;
+    }
+    
+    .close-modal-btn {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+        color: var(--muted) !important;
+    }
+    
+    .close-modal-btn:hover {
+        background: #ef4444 !important;
+        color: #ffffff !important;
+    }
+    
+    .online-user-item {
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+    }
+    
+    .online-user-item:hover {
+        background: #f1f5f9 !important;
+    }
+    
+    .online-user-avatar {
+        background: linear-gradient(135deg, var(--primary) 0%, #7dd3fc 100%) !important;
+        color: #ffffff !important;
+    }
+    
+    .online-user-name {
+        color: var(--text) !important;
+    }
+    
+    .online-user-status {
+        color: var(--muted) !important;
+    }
+    
+    .no-users-message {
+        color: var(--muted) !important;
+    }
+    
+    /* Presence Toasts */
+    .presence-toast {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: var(--text) !important;
+        border: 1px solid var(--border) !important;
+    }
+    
+    .presence-toast .name {
+        color: var(--text) !important;
+        font-weight: 600 !important;
+    }
+    
+    .presence-toast .meta {
+        color: var(--muted) !important;
+    }
+    
+    .presence-toast .close-btn {
+        color: var(--muted) !important;
+    }
+    
+    .presence-toast .close-btn:hover {
+        background: rgba(148, 163, 184, 0.12) !important;
+        color: var(--text) !important;
+    }
+    
+    /* Error Messages */
+    .error-message {
+        background: #fef2f2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fca5a5 !important;
+    }
+    
+    /* Scrollbar */
+    #messagesContainer::-webkit-scrollbar-track {
+        background: #f8fafc !important;
+    }
+    
+    #messagesContainer::-webkit-scrollbar-thumb {
+        background: #cbd5e1 !important;
+    }
+    
+    #messagesContainer::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8 !important;
+    }
+}
+
+/* MOBILE-SPECIFIC LIGHT THEME FIXES */
+@media (prefers-color-scheme: light) and (max-width: 768px) {
+    .chat-title {
+        color: var(--text) !important;
+        font-weight: 700 !important;
+    }
+    
+    .user-info {
+        color: var(--muted) !important;
+    }
+    
+    .message-text {
+        color: var(--text) !important;
+        font-weight: 400 !important;
+    }
+    
+    .message-username {
+        color: var(--text-secondary) !important;
+        font-weight: 600 !important;
+    }
+    
+    .message-header {
+        color: var(--muted) !important;
+    }
+    
+    .message-time {
+        color: var(--muted) !important;
+    }
+}
+
+@media (prefers-color-scheme: light) and (max-width: 480px) {
+    .chat-title {
+        color: var(--text) !important;
+        font-weight: 700 !important;
+    }
+    
+    .user-info {
+        color: var(--muted) !important;
+    }
+    
+    .status-indicator {
+        background: var(--primary-soft) !important;
+        color: var(--text) !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    }
+    
+    .message-text {
+        color: var(--text) !important;
+        font-weight: 400 !important;
+    }
+    
+    .message-username {
+        color: var(--text-secondary) !important;
+        font-weight: 600 !important;
+    }
+    
+    .message-header {
+        color: var(--muted) !important;
+    }
+    
+    .message-time {
+        color: var(--muted) !important;
+    }
+    
+    .system-message,
+    .welcome-message,
+    .typing-indicator {
+        background: #f1f5f9 !important;
+        color: var(--text) !important;
+    }
+    
+    .typing-user {
+        color: var(--text) !important;
+    }
+    
+    #messageInput {
+        color: var(--text) !important;
+    }
+    
+    #messageInput::placeholder {
+        color: var(--muted) !important;
+    }
+}
