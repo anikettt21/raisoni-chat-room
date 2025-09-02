@@ -35,8 +35,9 @@ app.use((err, req, res, next) => {
 
 // Store connected users and recent messages
 const connectedUsers = new Map(); // socketId -> userData
-const recentMessages = []; // Store last 50 messages
-const MAX_MESSAGES = 50;
+const recentMessages = []; // Store recent messages
+const MAX_MESSAGES = 200; // soft cap; TTL cleanup will keep within 24h anyway
+const MESSAGE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const typingUsers = new Map(); // username -> socketId
 
 // Private chat functionality
@@ -101,10 +102,32 @@ function addMessageToHistory(messageData) {
     id: String(messageData.id)
   });
   
-  // Keep only recent messages
+  // Prune by TTL and soft cap
+  pruneExpiredMessages();
   if (recentMessages.length > MAX_MESSAGES) {
-    recentMessages.shift();
+    recentMessages.splice(0, recentMessages.length - MAX_MESSAGES);
   }
+}
+
+// Remove messages older than TTL and broadcast deletions
+function pruneExpiredMessages() {
+  const now = Date.now();
+  const toDelete = [];
+  for (let i = 0; i < recentMessages.length; i++) {
+    const msg = recentMessages[i];
+    const ts = new Date(msg.timestamp).getTime();
+    if (isFinite(ts) && now - ts > MESSAGE_TTL_MS) {
+      toDelete.push(String(msg.id));
+    }
+  }
+  if (toDelete.length === 0) return;
+  // Filter out expired
+  for (const id of toDelete) {
+    const idx = recentMessages.findIndex(m => String(m.id) === id);
+    if (idx !== -1) recentMessages.splice(idx, 1);
+  }
+  // Notify clients
+  io.emit('message deleted', toDelete);
 }
 
 function updateMessageReactions(messageId, reaction, username, action) {
@@ -124,9 +147,7 @@ function updateMessageReactions(messageId, reaction, username, action) {
       const userIndex = users.indexOf(username);
       if (userIndex > -1) {
         users.splice(userIndex, 1);
-        console.log(`Removed existing reaction ${existingReaction} by ${username} from message ${messageId}`);
-        
-        // Remove reaction if no users left
+        // clean empty arrays
         if (users.length === 0) {
           delete message.reactions[existingReaction];
         }
@@ -140,20 +161,15 @@ function updateMessageReactions(messageId, reaction, username, action) {
     
     if (!message.reactions[reaction].includes(username)) {
       message.reactions[reaction].push(username);
-      console.log(`Added reaction ${reaction} by ${username} to message ${messageId}`);
     }
   } else if (action === 'remove') {
-    // Remove user from specific reaction
     if (message.reactions[reaction]) {
-      const index = message.reactions[reaction].indexOf(username);
-      if (index > -1) {
-        message.reactions[reaction].splice(index, 1);
-        console.log(`Removed reaction ${reaction} by ${username} from message ${messageId}`);
-      }
-      
-      // Remove reaction if no users left
-      if (message.reactions[reaction].length === 0) {
-        delete message.reactions[reaction];
+      const idx = message.reactions[reaction].indexOf(username);
+      if (idx > -1) {
+        message.reactions[reaction].splice(idx, 1);
+        if (message.reactions[reaction].length === 0) {
+          delete message.reactions[reaction];
+        }
       }
     }
   }
@@ -192,117 +208,48 @@ function cleanupRateLimits() {
   }
 }
 
-// Private chat helper functions
-function createPrivateChatId(user1, user2) {
-  // Create a consistent chat ID regardless of who initiates
-  const sortedUsers = [user1, user2].sort();
-  return `private_${sortedUsers[0]}_${sortedUsers[1]}`;
-}
-
-function getOrCreatePrivateChat(user1, user2) {
-  const chatId = createPrivateChatId(user1, user2);
-  
-  if (!privateChats.has(chatId)) {
-    privateChats.set(chatId, {
-      participants: new Set([user1, user2]),
-      messages: []
-    });
-  }
-  
-  // Ensure both users are tracked as having this private chat
-  if (!userPrivateChats.has(user1)) {
-    userPrivateChats.set(user1, new Set());
-  }
-  if (!userPrivateChats.has(user2)) {
-    userPrivateChats.set(user2, new Set());
-  }
-  
-  userPrivateChats.get(user1).add(chatId);
-  userPrivateChats.get(user2).add(chatId);
-  
-  return chatId;
-}
-
-function addPrivateMessageToHistory(chatId, messageData) {
-  const chat = privateChats.get(chatId);
-  if (!chat) return false;
-  
-  // Initialize reactions if not present
-  if (!messageData.reactions) {
-    messageData.reactions = {};
-  }
-  
-  // Ensure message has a unique ID as string
-  if (!messageData.id) {
-    messageData.id = String(Date.now() + Math.random());
-  }
-  
-  chat.messages.push({
-    ...messageData,
-    id: String(messageData.id)
-  });
-  
-  // Keep only recent messages
-  if (chat.messages.length > MAX_PRIVATE_MESSAGES) {
-    chat.messages.shift();
-  }
-  
-  return true;
-}
-
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
   
-  // Send recent messages to newly connected user
-  if (recentMessages.length > 0) {
-    const last10Messages = recentMessages.slice(-10);
-    last10Messages.forEach(msg => {
-      // Ensure reactions are included when sending to new users
-      const messageWithReactions = {
-        ...msg,
-        reactions: msg.reactions || {}
-      };
-      socket.emit('chat message', messageWithReactions);
-    });
-  }
+  // Send only messages from last 24h to newly connected user
+  pruneExpiredMessages();
+  const now = Date.now();
+  const recent24h = recentMessages.filter(m => {
+    const ts = new Date(m.timestamp).getTime();
+    return isFinite(ts) && now - ts <= MESSAGE_TTL_MS;
+  });
+  socket.emit('recent messages', recent24h);
 
   socket.on('user joined', (data) => {
     try {
-      const username = sanitizeUsername(data.username);
-      if (!username) {
-        socket.emit('error', { message: 'Invalid username' });
-        return;
+      // Sanitize and ensure a username
+      let username = sanitizeUsername(data && data.username) || `User${Math.floor(Math.random() * 10000)}`;
+
+      // If username already exists for another socket, make it unique
+      const existingUser = Array.from(connectedUsers.values()).find(user => user.username === username && user.socketId !== socket.id);
+      if (existingUser) {
+        username = `${username}_${Math.floor(Math.random() * 1000)}`;
       }
 
-      // Check if username is already taken
-      const existingUser = Array.from(connectedUsers.values()).find(user => user.username === username);
-      if (existingUser && existingUser.socketId !== socket.id) {
-        const newUsername = `${username}_${Math.floor(Math.random() * 1000)}`;
-        socket.emit('username changed', { 
-          oldUsername: username, 
-          newUsername: newUsername,
-          reason: 'Username already taken'
-        });
-        connectedUsers.set(socket.id, { username: newUsername, socketId: socket.id, joinTime: new Date() });
-      } else {
-        connectedUsers.set(socket.id, { username, socketId: socket.id, joinTime: new Date() });
-      }
-
+      // Store connected user with the final username
+      connectedUsers.set(socket.id, { username, socketId: socket.id, joinTime: new Date() });
       const userData = connectedUsers.get(socket.id);
-      
-      // Broadcast user joined (except to the user themselves)
-      socket.broadcast.emit('user joined', {
+
+      // Inform the connecting client of its assigned username (in case server changed it)
+      socket.emit('username assigned', {
         username: userData.username,
         timestamp: new Date().toISOString()
       });
 
-      // Send current online users to the new user immediately
-      const onlineUsers = getOnlineUsers();
-      socket.emit('online users', onlineUsers);
-      
-      // Broadcast updated user count and online users list to all clients
+      // Broadcast to all clients that a user joined and send updated lists/count
+      io.emit('user joined', {
+        username: userData.username,
+        timestamp: new Date().toISOString()
+      });
+
+      // This will emit both 'user count' and 'online users' to everyone
       broadcastUserCount();
-      
+
       console.log(`${userData.username} joined the chat. Total users: ${connectedUsers.size}`);
     } catch (error) {
       console.error('Error handling user join:', error);
@@ -310,113 +257,61 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Handle explicit request for online users (for modal)
   socket.on('get online users', () => {
     try {
-      const userData = connectedUsers.get(socket.id);
-      if (!userData) {
-        socket.emit('error', { message: 'User not found. Please refresh.' });
-        return;
-      }
-      
-      const onlineUsers = getOnlineUsers();
-      console.log(`Sending online users to ${userData.username}: ${onlineUsers.join(', ')}`);
-      
-      // Send the current online users list to this specific client
-      socket.emit('online users', onlineUsers);
+      socket.emit('online users', getOnlineUsers());
     } catch (error) {
-      console.error('Error getting online users:', error);
-      socket.emit('error', { message: 'Failed to get online users' });
+      console.error('Error handling get online users:', error);
     }
   });
 
   socket.on("chat message", (data) => {
     try {
-      // Check rate limit
+      // Rate limit
       if (!checkRateLimit(socket.id)) {
-        socket.emit('error', { message: 'Rate limit exceeded. Please slow down.' });
+        socket.emit('error', { message: 'Rate limit exceeded' });
         return;
       }
 
-      const userData = connectedUsers.get(socket.id);
-      if (!userData) {
-        socket.emit('error', { message: 'User not found. Please refresh.' });
-        return;
-      }
-
-      const sanitizedMessage = sanitizeMessage(data.message);
-      if (!sanitizedMessage) {
-        socket.emit('error', { message: 'Invalid message' });
-        return;
-      }
+      const username = sanitizeUsername(data && data.username) || (connectedUsers.get(socket.id) && connectedUsers.get(socket.id).username) || 'Unknown';
+      const messageText = sanitizeMessage(data && data.message);
+      if (!messageText) return;
 
       const messageData = {
-        id: data.id || String(Date.now() + Math.random()),
-        username: userData.username,
-        message: sanitizedMessage,
+        id: String(Date.now() + Math.random()),
+        username,
+        message: messageText,
         timestamp: new Date().toISOString(),
         reactions: {}
       };
 
-      // Add to message history
       addMessageToHistory(messageData);
-
-      // Broadcast to all clients with reactions included
-      io.emit("chat message", messageData);
-      
-      console.log(`${userData.username}: ${sanitizedMessage} (ID: ${messageData.id})`);
+      io.emit('chat message', messageData);
     } catch (error) {
-      console.error('Error handling message:', error);
-      socket.emit('error', { message: 'Failed to send message' });
+      console.error('Error handling chat message:', error);
     }
   });
 
   socket.on('message reaction', (data) => {
     try {
-      const userData = connectedUsers.get(socket.id);
-      if (!userData) {
-        socket.emit('error', { message: 'User not found. Please refresh.' });
-        return;
-      }
-
-      const { messageId, reaction, action } = data;
-      
-      if (!messageId || !reaction || !action) {
-        socket.emit('error', { message: 'Invalid reaction data' });
-        return;
-      }
-
-      console.log(`Processing reaction: ${action} ${reaction} on message ${messageId} by ${userData.username}`);
-
-      // Update message reactions in history
-      const success = updateMessageReactions(messageId, reaction, userData.username, action);
-      
-      if (success) {
-        // Broadcast reaction update to all clients
-        io.emit('message reaction', {
-          messageId: messageId,
-          reaction: reaction,
-          username: userData.username,
-          action: action
-        });
-        
-        console.log(`Broadcasted reaction: ${userData.username} ${action}ed ${reaction} on message ${messageId}`);
-      } else {
-        socket.emit('error', { message: 'Message not found' });
+      const { messageId, reaction, username, action } = data || {};
+      if (!messageId || !reaction || !username || !action) return;
+      const ok = updateMessageReactions(messageId, reaction, username, action);
+      if (ok) {
+        io.emit('message reaction', { messageId, reaction, username, action });
       }
     } catch (error) {
-      console.error('Error handling reaction:', error);
-      socket.emit('error', { message: 'Failed to add reaction' });
+      console.error('Error handling message reaction:', error);
     }
   });
 
   socket.on('typing', (data) => {
     try {
-      const userData = connectedUsers.get(socket.id);
-      if (!userData) return;
-
-      typingUsers.set(userData.username, socket.id);
-      socket.broadcast.emit('user typing', { username: userData.username });
+      const username = sanitizeUsername(data && data.username) || (connectedUsers.get(socket.id) && connectedUsers.get(socket.id).username);
+      if (!username) return;
+      typingUsers.set(username, socket.id);
+      // Broadcast who is typing (server canonical)
+      socket.broadcast.emit('typing', { username });
     } catch (error) {
       console.error('Error handling typing:', error);
     }
@@ -424,11 +319,10 @@ io.on("connection", (socket) => {
 
   socket.on('stop typing', (data) => {
     try {
-      const userData = connectedUsers.get(socket.id);
-      if (!userData) return;
-
-      typingUsers.delete(userData.username);
-      socket.broadcast.emit('user stop typing', { username: userData.username });
+      const username = sanitizeUsername(data && data.username) || (connectedUsers.get(socket.id) && connectedUsers.get(socket.id).username);
+      if (!username) return;
+      typingUsers.delete(username);
+      socket.broadcast.emit('stop typing', { username });
     } catch (error) {
       console.error('Error handling stop typing:', error);
     }
@@ -436,50 +330,20 @@ io.on("connection", (socket) => {
 
   socket.on('username changed', (data) => {
     try {
-      const userData = connectedUsers.get(socket.id);
-      if (!userData) return;
-
-      const newUsername = sanitizeUsername(data.newUsername);
-      if (!newUsername) {
-        socket.emit('error', { message: 'Invalid new username' });
-        return;
-      }
-
-      // Check if new username is available
-      const existingUser = Array.from(connectedUsers.values()).find(user => 
-        user.username === newUsername && user.socketId !== socket.id
-      );
-      
-      if (existingUser) {
-        socket.emit('error', { message: 'Username already taken' });
-        return;
-      }
-
-      const oldUsername = userData.username;
-      userData.username = newUsername;
-      
-      // Remove from typing users if was typing
-      if (typingUsers.has(oldUsername)) {
-        typingUsers.delete(oldUsername);
-        typingUsers.set(newUsername, socket.id);
-      }
-
-      // Broadcast username change
-      io.emit('user joined', {
-        username: newUsername,
-        timestamp: new Date().toISOString()
-      });
-
-      // Update online users list for all clients
+      const newName = sanitizeUsername(data && data.newUsername);
+      if (!newName) return;
+      const user = connectedUsers.get(socket.id);
+      if (!user) return;
+      const oldName = user.username;
+      user.username = newName;
+      connectedUsers.set(socket.id, user);
+      io.emit('username changed', { oldName, newName, timestamp: new Date().toISOString() });
       broadcastUserCount();
-
-      console.log(`${oldUsername} changed username to ${newUsername}`);
     } catch (error) {
-      console.error('Error handling username change:', error);
+      console.error('Error handling username changed:', error);
     }
   });
 
-  // Private chat events
   socket.on('invite to private chat', (data) => {
     try {
       const userData = connectedUsers.get(socket.id);
@@ -522,8 +386,7 @@ io.on("connection", (socket) => {
 
       console.log(`${userData.username} invited ${targetUsername} to private chat`);
     } catch (error) {
-      console.error('Error sending private chat invite:', error);
-      socket.emit('error', { message: 'Failed to send invite' });
+      console.error('Error invite to private chat:', error);
     }
   });
 
@@ -583,7 +446,6 @@ io.on("connection", (socket) => {
       console.log(`${userData.username} accepted private chat with ${fromUsername}`);
     } catch (error) {
       console.error('Error accepting private chat:', error);
-      socket.emit('error', { message: 'Failed to accept private chat' });
     }
   });
 
@@ -670,36 +532,31 @@ io.on("connection", (socket) => {
 
   function handleUserDisconnect(socket) {
     try {
-      const userData = connectedUsers.get(socket.id);
-      if (userData) {
-        // Remove from typing users
-        typingUsers.delete(userData.username);
-        
-        // Broadcast user left
-        socket.broadcast.emit('user left', {
-          username: userData.username,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Remove from connected users
+      const user = connectedUsers.get(socket.id);
+      if (user) {
+        const username = user.username;
         connectedUsers.delete(socket.id);
-        
-        // Broadcast updated user count and online users list
+        typingUsers.delete(username);
+        io.emit('user left', { username, timestamp: new Date().toISOString() });
         broadcastUserCount();
-        
-        console.log(`${userData.username} left the chat. Remaining users: ${connectedUsers.size}`);
       }
-
-      // Clean up rate limiting for this user
-      messageLimits.delete(socket.id);
     } catch (error) {
-      console.error('Error handling user disconnect:', error);
+      console.error('Error during disconnect cleanup:', error);
     }
   }
 });
 
 // Clean up old rate limit entries periodically
 setInterval(cleanupRateLimits, 300000); // Clean up every 5 minutes
+
+// Periodic TTL pruning for messages (every 5 minutes)
+setInterval(() => {
+  try {
+    pruneExpiredMessages();
+  } catch (e) {
+    console.error('Error during TTL prune:', e);
+  }
+}, 300000);
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

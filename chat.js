@@ -24,7 +24,10 @@
                 this.messageReactions = new Map(); // Store reactions state for each message
                 
                 // Available reactions
-                this.availableReactions = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🎉'];
+                this.availableReactions = ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '😒', '💀'];
+                
+                // Presence toasts container
+                this.presenceToasts = null;
                 
                 debugLog('Initializing chat app...');
                 this.initializeEventListeners();
@@ -89,8 +92,8 @@
                     // Handle user join notifications
                     this.socket.on('user joined', (data) => {
                         debugLog(`👋 User joined: ${data.username}`);
-                        if (data.username !== this.username) {
-                            this.addSystemMessage(`${data.username} joined the chat`, data.timestamp);
+                        if (data && data.username) {
+                            this.showPresenceToast('join', data.username);
                         }
                         this.onlineUsers.add(data.username);
                         this.updateUserCount(this.onlineUsers.size);
@@ -102,7 +105,9 @@
                     // Handle user leave notifications
                     this.socket.on('user left', (data) => {
                         debugLog(`👋 User left: ${data.username}`);
-                        this.addSystemMessage(`${data.username} left the chat`, data.timestamp);
+                        if (data && data.username) {
+                            this.showPresenceToast('leave', data.username);
+                        }
                         this.onlineUsers.delete(data.username);
                         this.updateUserCount(this.onlineUsers.size);
                         
@@ -154,6 +159,42 @@
                     this.socket.on('message reaction', (data) => {
                         debugLog(`😀 Reaction received: ${data.reaction} on message ${data.messageId}`);
                         this.updateMessageReactions(data.messageId, data.reaction, data.username, data.action);
+                    });
+
+                    // Receive recent messages (last 24h)
+                    this.socket.on('recent messages', (messages) => {
+                        try {
+                            debugLog(`🕒 Received recent messages: ${Array.isArray(messages) ? messages.length : 0}`);
+                            // Reset UI and local reaction state
+                            this.messagesContainer.innerHTML = '';
+                            this.messageReactions.clear();
+                            if (Array.isArray(messages)) {
+                                messages.forEach((m) => {
+                                    if (!m || !m.id) return;
+                                    this.addMessage(m.username, m.message, m.username === this.username, m.timestamp, m.id, m.reactions || {});
+                                });
+                            }
+                        } catch (e) {
+                            debugLog(`⚠ Error rendering recent messages: ${e.message}`);
+                        }
+                    });
+
+                    // Handle server-driven deletions for expired messages
+                    this.socket.on('message deleted', (ids) => {
+                        try {
+                            if (!Array.isArray(ids) || ids.length === 0) return;
+                            debugLog(`🗑️ Deleting ${ids.length} expired messages`);
+                            ids.forEach((id) => {
+                                const messageElement = document.querySelector(`[data-message-id="${String(id)}"]`);
+                                if (messageElement && messageElement.parentNode) {
+                                    messageElement.parentNode.removeChild(messageElement);
+                                }
+                                // Drop local reaction state
+                                this.messageReactions.delete(String(id));
+                            });
+                        } catch (e) {
+                            debugLog(`⚠ Error deleting messages: ${e.message}`);
+                        }
                     });
 
                     // Handle errors
@@ -300,6 +341,47 @@
                 this.sendBtn.disabled = true;
 
                 debugLog('✅ Event listeners set up');
+            }
+
+            ensurePresenceToastsContainer() {
+                if (this.presenceToasts) return this.presenceToasts;
+                const chatContainer = document.querySelector('.chat-container');
+                if (!chatContainer) return null;
+                const container = document.createElement('div');
+                container.className = 'presence-toasts';
+                chatContainer.appendChild(container);
+                this.presenceToasts = container;
+                return container;
+            }
+
+            showPresenceToast(type, username) {
+                const container = this.ensurePresenceToastsContainer();
+                if (!container) return;
+                const toast = document.createElement('div');
+                toast.className = `presence-toast ${type}`;
+                const now = new Date();
+                const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                const icon = type === 'join' ? '🟢' : '🔴';
+                toast.innerHTML = `<span class="icon">${icon}</span><span class="name">${this.escapeHtml(username)}</span><span class="meta">${type === 'join' ? 'joined' : 'left'} • ${time}</span><button class="close-btn" aria-label="Dismiss">×</button>`;
+                container.appendChild(toast);
+                
+                const closeBtn = toast.querySelector('.close-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toast.classList.add('fade-out');
+                        setTimeout(() => {
+                            if (toast.parentNode) toast.parentNode.removeChild(toast);
+                        }, 320);
+                    });
+                }
+                
+                const autoTimer = setTimeout(() => {
+                    toast.classList.add('fade-out');
+                    setTimeout(() => {
+                        if (toast.parentNode) toast.parentNode.removeChild(toast);
+                    }, 520);
+                }, 5000);
             }
 
             resizeTextarea() {
