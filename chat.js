@@ -262,6 +262,9 @@
             initializeEventListeners() {
                 debugLog('Setting up event listeners...');
                 
+                // Mobile keyboard handling
+                this.setupMobileKeyboardHandling();
+                
                 // Send message on button click
                 this.sendBtn.addEventListener('click', () => {
                     debugLog('📤 Send button clicked');
@@ -992,6 +995,74 @@
                 return div.innerHTML;
             }
 
+            setupMobileKeyboardHandling() {
+                debugLog('📱 Setting up mobile keyboard handling...');
+                
+                // Handle viewport changes on mobile
+                let initialViewportHeight = window.innerHeight;
+                let isKeyboardOpen = false;
+                
+                const handleViewportChange = () => {
+                    const currentHeight = window.innerHeight;
+                    const heightDifference = initialViewportHeight - currentHeight;
+                    
+                    // If height decreased significantly, keyboard is likely open
+                    if (heightDifference > 150) {
+                        if (!isKeyboardOpen) {
+                            debugLog('📱 Keyboard opened');
+                            isKeyboardOpen = true;
+                            this.handleKeyboardOpen();
+                        }
+                    } else {
+                        if (isKeyboardOpen) {
+                            debugLog('📱 Keyboard closed');
+                            isKeyboardOpen = false;
+                            this.handleKeyboardClose();
+                        }
+                    }
+                };
+                
+                // Listen for viewport changes
+                window.addEventListener('resize', handleViewportChange);
+                window.addEventListener('orientationchange', () => {
+                    // Reset initial height after orientation change
+                    setTimeout(() => {
+                        initialViewportHeight = window.innerHeight;
+                        handleViewportChange();
+                    }, 500);
+                });
+                
+                // Handle input focus/blur for additional keyboard detection
+                this.messageInput.addEventListener('focus', () => {
+                    debugLog('📱 Input focused');
+                    setTimeout(() => {
+                        this.scrollToBottom();
+                    }, 300);
+                });
+                
+                this.messageInput.addEventListener('blur', () => {
+                    debugLog('📱 Input blurred');
+                });
+            }
+            
+            handleKeyboardOpen() {
+                // Ensure input is visible when keyboard opens
+                setTimeout(() => {
+                    this.scrollToBottom();
+                    this.messageInput.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }, 100);
+            }
+            
+            handleKeyboardClose() {
+                // Reset scroll position when keyboard closes
+                setTimeout(() => {
+                    this.scrollToBottom();
+                }, 100);
+            }
+
             showError(message) {
                 debugLog(`⚠ Error: ${message}`);
                 const errorDiv = document.createElement('div');
@@ -1009,8 +1080,24 @@
             }
         }
 
+        // Prevent mobile viewport shift on page load
+        function preventViewportShift() {
+            // Set initial viewport height
+            const setViewportHeight = () => {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            };
+            
+            setViewportHeight();
+            window.addEventListener('resize', setViewportHeight);
+            window.addEventListener('orientationchange', () => {
+                setTimeout(setViewportHeight, 100);
+            });
+        }
+
         // Initialize chat when page loads
         document.addEventListener('DOMContentLoaded', () => {
             debugLog('🚀 DOM loaded, initializing chat...');
+            preventViewportShift();
             window.chatApp = new RealTimeChatApp();
         });

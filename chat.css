@@ -6,12 +6,26 @@
     box-sizing: border-box;
 }
 
+/* Prevent mobile viewport shift on page load */
+html {
+    height: 100%;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    overflow: hidden;
+    /* Prevent zoom on input focus */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     background-size: 400% 400%;
     animation: gradientShift 10s ease infinite;
     height: 100vh;
+    height: calc(var(--vh, 1vh) * 100); /* Use custom viewport height */
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100); /* Use custom viewport height */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -19,6 +33,9 @@ body {
     overflow: hidden;
     /* Safe area support for mobile devices */
     padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    /* Prevent mobile zoom and scrolling issues */
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
 }
 
 @keyframes gradientShift {
@@ -67,6 +84,11 @@ body::before {
     width: 95%;
     max-width: 900px;
     height: 90vh;
+    height: calc(var(--vh, 1vh) * 90); /* Use custom viewport height */
+    height: 90dvh; /* Dynamic viewport height for mobile */
+    max-height: 90vh;
+    max-height: calc(var(--vh, 1vh) * 90); /* Use custom viewport height */
+    max-height: 90dvh; /* Dynamic viewport height for mobile */
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -469,6 +491,11 @@ body::before {
     display: flex;
     gap: 1rem;
     align-items: flex-end;
+    /* Mobile keyboard handling */
+    position: relative;
+    z-index: 10;
+    /* Ensure input stays visible when keyboard appears */
+    flex-shrink: 0;
 }
 
 #messageInput {
@@ -760,14 +787,34 @@ body::before {
 }
 
 @media (max-width: 768px) {
+    body {
+        height: 100vh;
+        height: calc(var(--vh, 1vh) * 100); /* Use custom viewport height */
+        height: 100dvh; /* Dynamic viewport height for mobile */
+        min-height: 100vh;
+        min-height: calc(var(--vh, 1vh) * 100); /* Use custom viewport height */
+        min-height: 100dvh; /* Dynamic viewport height for mobile */
+        /* Prevent viewport shift on mobile */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+    }
+
     .chat-container {
         width: 98%;
-        height: calc(100vh - 120px);
-        /* Leave more space for browser UI */
-        max-height: calc(100vh - 120px);
+        height: calc(100vh - 40px);
+        height: calc(var(--vh, 1vh) * 100 - 40px); /* Use custom viewport height */
+        height: calc(100dvh - 40px); /* Dynamic viewport height for mobile */
+        max-height: calc(100vh - 40px);
+        max-height: calc(var(--vh, 1vh) * 100 - 40px); /* Use custom viewport height */
+        max-height: calc(100dvh - 40px); /* Dynamic viewport height for mobile */
         border-radius: 20px;
-        margin-bottom: 60px;
-        /* Additional bottom margin for floating elements */
+        margin: 20px auto;
+        /* Remove bottom margin that was causing issues */
+        position: relative;
     }
 
     /* ... rest of the 768px styles stay the same ... */
@@ -825,18 +872,23 @@ body::before {
 
 @media (max-width: 480px) {
     body {
-        padding-bottom: 80px;
+        padding-bottom: 0;
+        /* Remove padding that was causing viewport shift */
         /* Safe area for floating browser elements */
     }
 
     .chat-container {
         width: 100%;
-        height: calc(100vh - 140px);
+        height: calc(100vh - 20px);
+        height: calc(var(--vh, 1vh) * 100 - 20px); /* Use custom viewport height */
+        height: calc(100dvh - 20px); /* Dynamic viewport height for mobile */
         /* More conservative height */
-        max-height: calc(100vh - 140px);
+        max-height: calc(100vh - 20px);
+        max-height: calc(var(--vh, 1vh) * 100 - 20px); /* Use custom viewport height */
+        max-height: calc(100dvh - 20px); /* Dynamic viewport height for mobile */
         border-radius: 0;
-        margin-bottom: 80px;
-        /* Additional bottom margin */
+        margin: 10px 0;
+        /* Remove bottom margin that was causing issues */
         position: relative;
     }
 
@@ -847,6 +899,10 @@ body::before {
         padding-bottom: calc(1rem + env(safe-area-inset-bottom, 20px));
         position: relative;
         z-index: 10;
+        /* Ensure input container stays at bottom and visible */
+        flex-shrink: 0;
+        /* Handle keyboard appearance */
+        transition: transform 0.3s ease;
     }
 
     /* ... rest of the 480px styles stay the same ... */
