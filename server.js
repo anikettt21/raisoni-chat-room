@@ -2,10 +2,6 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
-const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
@@ -20,8 +16,6 @@ const io = new Server(server, {
 
 // Serve static files
 app.use(express.static(path.join(__dirname)));
-app.use(express.json());
-app.use(cookieParser());
 
 // Serve the main HTML file for the root route
 app.get('/', (req, res) => {
@@ -37,93 +31,6 @@ app.get('/api/health', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Express error:', err.stack);
   res.status(500).send('Something went wrong!');
-});
-
-// ===== Simple In-Memory Auth (for demo/dev) =====
-// In production, replace with a real database.
-const users = new Map(); // email -> { id, email, passwordHash, name, createdAt }
-let nextUserId = 1;
-
-function signJwt(payload) {
-  const secret = process.env.JWT_SECRET || "dev-secret-change-me";
-  return jwt.sign(payload, secret, { expiresIn: "7d" });
-}
-
-function verifyJwt(token) {
-  const secret = process.env.JWT_SECRET || "dev-secret-change-me";
-  return jwt.verify(token, secret);
-}
-
-function authMiddleware(req, res, next) {
-  try {
-    const authHeader = req.headers.authorization || "";
-    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    const token = bearer || req.cookies.token;
-    if (!token) return res.status(401).json({ error: "Unauthorized" });
-    const decoded = verifyJwt(token);
-    req.user = decoded;
-    next();
-  } catch (e) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-}
-
-app.post('/api/auth/signup', async (req, res) => {
-  try {
-    const { email, password, name } = req.body || {};
-    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
-    const normalized = String(email).toLowerCase().trim();
-    if (users.has(normalized)) return res.status(409).json({ error: 'Email already in use' });
-    const passwordHash = await bcrypt.hash(String(password), 10);
-    const user = {
-      id: String(nextUserId++),
-      email: normalized,
-      passwordHash,
-      name: (name || '').toString().trim().substring(0, 50) || null,
-      createdAt: new Date().toISOString()
-    };
-    users.set(normalized, user);
-    const token = signJwt({ id: user.id, email: user.email, name: user.name });
-    res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 });
-    return res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
-  } catch (e) {
-    console.error('Signup error:', e);
-    return res.status(500).json({ error: 'Internal error' });
-  }
-});
-
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body || {};
-    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
-    const normalized = String(email).toLowerCase().trim();
-    const user = users.get(normalized);
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-    const ok = await bcrypt.compare(String(password), user.passwordHash);
-    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-    const token = signJwt({ id: user.id, email: user.email, name: user.name });
-    res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 });
-    return res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
-  } catch (e) {
-    console.error('Login error:', e);
-    return res.status(500).json({ error: 'Internal error' });
-  }
-});
-
-app.post('/api/auth/anon', (req, res) => {
-  try {
-    const anonId = `anon_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-    const token = signJwt({ id: anonId, anon: true });
-    res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 });
-    return res.json({ token, user: { id: anonId, anon: true } });
-  } catch (e) {
-    console.error('Anon error:', e);
-    return res.status(500).json({ error: 'Internal error' });
-  }
-});
-
-app.get('/api/auth/me', authMiddleware, (req, res) => {
-  return res.json({ user: req.user });
 });
 
 // Store connected users and recent messages
