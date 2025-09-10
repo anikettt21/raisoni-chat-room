@@ -1,4 +1,4 @@
- // Debug logging function (console only)
+// Debug logging function (console only)
         function debugLog(message) {
             console.log(message);
         }
@@ -340,6 +340,14 @@
                     }
                 });
 
+                // Notification close button
+                const notificationCloseBtn = document.getElementById('notificationClose');
+                if (notificationCloseBtn) {
+                    notificationCloseBtn.addEventListener('click', () => {
+                        this.hideNotification();
+                    });
+                }
+
                 // Initial button state
                 this.sendBtn.disabled = true;
 
@@ -509,7 +517,7 @@
                 
                 // Create reactions HTML
                 const reactionsHtml = this.createReactionsHtml(reactions, messageId);
-                
+
                 messageDiv.innerHTML = `
                     <div class="message-header">
                         <span class="message-username">${this.escapeHtml(username)}</span>
@@ -531,10 +539,12 @@
 
                 // Add event listener for reaction button
                 const reactionBtn = messageDiv.querySelector('.reaction-btn');
-                reactionBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.showReactionMenu(messageId, reactionBtn);
-                });
+                if (reactionBtn) {
+                    reactionBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.showReactionMenu(messageId, reactionBtn);
+                    });
+                }
 
                 // Add event listeners for existing reaction badges
                 const reactionBadges = messageDiv.querySelectorAll('.reaction-badge');
@@ -1077,6 +1087,22 @@
                         errorDiv.parentNode.removeChild(errorDiv);
                     }
                 }, 5000);
+            }
+
+            hideNotification() {
+                debugLog('🔔 Hiding notification banner');
+                const notificationBanner = document.getElementById('notificationBanner');
+                if (notificationBanner) {
+                    // Add fade out animation
+                    notificationBanner.style.animation = 'notificationSlideOut 0.3s ease-in forwards';
+                    
+                    // Remove element after animation
+                    setTimeout(() => {
+                        if (notificationBanner.parentNode) {
+                            notificationBanner.parentNode.removeChild(notificationBanner);
+                        }
+                    }, 300);
+                }
             }
         }
 
