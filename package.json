@@ -23,7 +23,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^4.21.2",
+    "express": "^4.22.1",
     "jsonwebtoken": "^9.0.2",
     "socket.io": "^4.7.2"
   },
@@ -40,5 +40,6 @@
   "bugs": {
     "url": "https://github.com/anikettt21/raisoni-chat-room/issues"
   },
-  "homepage": "https://github.com/anikettt21/raisoni-chat-room#readme"
+  "homepage": "https://github.com/anikettt21/raisoni-chat-room#readme",
+  "type": "commonjs"
 }
