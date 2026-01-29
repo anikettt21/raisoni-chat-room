@@ -53,7 +53,7 @@ const RATE_LIMIT_WINDOW = 60000; // 1 minute
 function checkRateLimit(socketId) {
   const now = Date.now();
   const userLimit = messageLimits.get(socketId);
-  
+
   if (!userLimit || now > userLimit.resetTime) {
     // Reset or create new limit
     messageLimits.set(socketId, {
@@ -62,25 +62,25 @@ function checkRateLimit(socketId) {
     });
     return true;
   }
-  
+
   if (userLimit.count >= MESSAGE_RATE_LIMIT) {
     return false; // Rate limit exceeded
   }
-  
+
   userLimit.count++;
   return true;
 }
 
 function sanitizeMessage(message) {
   if (!message || typeof message !== 'string') return '';
-  
+
   // Remove excessive whitespace and limit length
   return message.trim().substring(0, 500);
 }
 
 function sanitizeUsername(username) {
   if (!username || typeof username !== 'string') return null;
-  
+
   // Clean username: remove special chars, limit length
   const cleaned = username.trim().replace(/[<>\"'&]/g, '').substring(0, 20);
   return cleaned || null;
@@ -91,17 +91,17 @@ function addMessageToHistory(messageData) {
   if (!messageData.reactions) {
     messageData.reactions = {};
   }
-  
+
   // Ensure message has a unique ID as string
   if (!messageData.id) {
     messageData.id = String(Date.now() + Math.random());
   }
-  
+
   recentMessages.push({
     ...messageData,
     id: String(messageData.id)
   });
-  
+
   // Prune by TTL and soft cap
   pruneExpiredMessages();
   if (recentMessages.length > MAX_MESSAGES) {
@@ -136,11 +136,11 @@ function updateMessageReactions(messageId, reaction, username, action) {
     console.log(`Message not found for reaction: ${messageId}`);
     return false;
   }
-  
+
   if (!message.reactions) {
     message.reactions = {};
   }
-  
+
   if (action === 'add') {
     // Remove any existing reactions by this user first (one reaction per user)
     for (const [existingReaction, users] of Object.entries(message.reactions)) {
@@ -153,12 +153,12 @@ function updateMessageReactions(messageId, reaction, username, action) {
         }
       }
     }
-    
+
     // Add new reaction
     if (!message.reactions[reaction]) {
       message.reactions[reaction] = [];
     }
-    
+
     if (!message.reactions[reaction].includes(username)) {
       message.reactions[reaction].push(username);
     }
@@ -173,16 +173,16 @@ function updateMessageReactions(messageId, reaction, username, action) {
       }
     }
   }
-  
+
   return true;
 }
 
 function broadcastUserCount() {
   const count = connectedUsers.size;
   const onlineUsers = getOnlineUsers();
-  
+
   console.log(`Broadcasting user count: ${count}, users: ${onlineUsers.join(', ')}`);
-  
+
   // Send both count and full user list
   io.emit('user count', count);
   io.emit('online users', onlineUsers);
@@ -199,7 +199,7 @@ function cleanupRateLimits() {
       messageLimits.delete(socketId);
     }
   }
-  
+
   // Also clean up rate limits for disconnected users
   for (const [socketId] of messageLimits.entries()) {
     if (!connectedUsers.has(socketId)) {
@@ -210,7 +210,7 @@ function cleanupRateLimits() {
 
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
-  
+
   // Send only messages from last 24h to newly connected user
   pruneExpiredMessages();
   const now = Date.now();
@@ -413,7 +413,7 @@ io.on("connection", (socket) => {
 
       // Create or get private chat
       const chatId = getOrCreatePrivateChat(userData.username, fromUsername);
-      
+
       // Get sender's socket
       const senderSocket = io.sockets.sockets.get(senderUser.socketId);
       if (senderSocket) {
@@ -433,7 +433,7 @@ io.on("connection", (socket) => {
           messages: last20Messages,
           withUsername: fromUsername
         });
-        
+
         if (senderSocket) {
           senderSocket.emit('private chat history', {
             chatId: chatId,

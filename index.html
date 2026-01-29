@@ -1,29 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Raisoni Gang Chat Room</title>
-  <link rel="stylesheet" href="chat.css">
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-  <main class="hero-card">
-    <h1>Raisoni Gang Chat Room</h1>
-    <p>Jitni chahe utani Karo bakchodi 😡</p>
+  <!-- Animated Background -->
+  <div class="background-mesh"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 
-    <input 
-      type="text" 
-      class="nickname-input" 
-      id="nickname" 
-      placeholder="Enter your nickname (optional)">
-     
-    <a href="chat.html" class="join-btn" onclick="saveNickname()">Join Chat</a>
-  </main>
+  <div class="container">
+    <main class="hero-card">
+      <h1>Raisoni Gang</h1>
+      <p class="subtitle">Join the chaotic conversation ⚡</p>
 
-  <footer>
-    Made by Aniket Gade !
-  </footer>
+      <div class="input-group">
+        <input type="text" class="nickname-input" id="nickname" placeholder="Choose your alias" autocomplete="off">
+      </div>
+
+      <a href="chat.html" class="join-btn" onclick="saveNickname()">Enter Chat</a>
+    </main>
+
+    <footer>
+      <p>Made with ❤️ by Aniket Gade</p>
+    </footer>
+  </div>
+
   <script src="main.js"></script>
 </body>
+
 </html>

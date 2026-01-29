@@ -1,278 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Raisoni Gang</title>
     <style>
         /* LIGHT THEME FIX - Add this at the very end of your chat.css file */
-@media (prefers-color-scheme: light) {
-    /* Override all existing light theme styles with higher specificity */
-    
-    /* Body and container */
-    body {
-        background: #f8fafc !important;
-    }
-    
-    body::before {
-        display: none !important;
-    }
-    
-    .chat-container {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1) !important;
-    }
-    
-    /* Header */
-    .chat-header {
-        background: #ffffff !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-    }
-    
-    .chat-title {
-        color: #1e293b !important;
-        text-shadow: none !important;
-    }
-    
-    .user-info {
-        color: #64748b !important;
-    }
-    
-    .status-indicator {
-        background: rgba(37, 99, 235, 0.1) !important;
-        color: #1e293b !important;
-        border: 1px solid rgba(37, 99, 235, 0.2) !important;
-    }
-    
-    /* Messages - The main fix */
-    .message.my-message {
-        background: rgba(37, 99, 235, 0.1) !important;
-        color: #1e293b !important;
-        border: 1px solid rgba(37, 99, 235, 0.2) !important;
-    }
-    
-    .message.other-message {
-        background: #f1f5f9 !important;
-        color: #1e293b !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    
-    /* Message content */
-    .message-header {
-        color: #64748b !important;
-    }
-    
-    .message-username {
-        color: #475569 !important;
-        font-weight: 600 !important;
-    }
-    
-    .message-text {
-        color: #1e293b !important;
-        font-weight: 400 !important;
-    }
-    
-    .message-time {
-        color: #64748b !important;
-    }
-    
-    /* System messages */
-    .system-message,
-    .welcome-message,
-    .typing-indicator {
-        background: #f1f5f9 !important;
-        color: #1e293b !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    
-    /* Input area */
-    .input-container {
-        background: #ffffff !important;
-        border-top: 1px solid #e2e8f0 !important;
-    }
-    
-    #messageInput {
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        color: #1e293b !important;
-    }
-    
-    #messageInput::placeholder {
-        color: #94a3b8 !important;
-    }
-    
-    #messageInput:focus {
-        background: #ffffff !important;
-        border-color: #2563eb !important;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
-    }
-    
-    #sendBtn {
-        background: #2563eb !important;
-        color: #ffffff !important;
-        border: none !important;
-    }
-    
-    #sendBtn:disabled {
-        background: #cbd5e1 !important;
-        color: #64748b !important;
-    }
-    
-    /* Reactions */
-    .reaction-badge {
-        background: #f1f5f9 !important;
-        color: #1e293b !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    
-    .reaction-badge.my-reaction {
-        background: rgba(37, 99, 235, 0.1) !important;
-        color: #1e293b !important;
-        border: 1px solid rgba(37, 99, 235, 0.3) !important;
-    }
-    
-    .reaction-btn {
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        color: #64748b !important;
-    }
-    
-    .reaction-btn:hover {
-        background: #f1f5f9 !important;
-        color: #1e293b !important;
-    }
-    
-    .reaction-menu {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1) !important;
-    }
-    
-    .reaction-option {
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        color: #1e293b !important;
-    }
-    
-    .reaction-option:hover {
-        background: rgba(37, 99, 235, 0.1) !important;
-        border-color: rgba(37, 99, 235, 0.3) !important;
-    }
-    
-    .reaction-option.current-reaction {
-        background: #2563eb !important;
-        color: #ffffff !important;
-        border-color: #2563eb !important;
-    }
-    
-    /* Online users modal */
-    .online-users-modal {
-        background: rgba(15, 23, 42, 0.5) !important;
-    }
-    
-    .online-users-content {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1) !important;
-    }
-    
-    .online-users-title {
-        color: #1e293b !important;
-    }
-    
-    .close-modal-btn {
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        color: #64748b !important;
-    }
-    
-    .close-modal-btn:hover {
-        background: #ef4444 !important;
-        color: #ffffff !important;
-    }
-    
-    .online-user-item {
-        background: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    
-    .online-user-item:hover {
-        background: #f1f5f9 !important;
-    }
-    
-    .online-user-avatar {
-        background: linear-gradient(135deg, #2563eb 0%, #7dd3fc 100%) !important;
-        color: #ffffff !important;
-    }
-    
-    .online-user-name {
-        color: #1e293b !important;
-    }
-    
-    .online-user-status {
-        color: #64748b !important;
-    }
-    
-    .no-users-message {
-        color: #64748b !important;
-    }
-    
-    /* User count clickable */
-    #userCount {
-        background: rgba(37, 99, 235, 0.1) !important;
-        border: 1px solid rgba(37, 99, 235, 0.2) !important;
-        color: #1e293b !important;
-    }
-    
-    #userCount:hover {
-        background: rgba(37, 99, 235, 0.15) !important;
-    }
-    
-    /* Presence toasts */
-    .presence-toast {
-        background: rgba(255, 255, 255, 0.95) !important;
-        color: #1e293b !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    
-    .presence-toast .name {
-        color: #1e293b !important;
-    }
-    
-    .presence-toast .meta {
-        color: #64748b !important;
-    }
-    
-    .presence-toast .close-btn {
-        color: #64748b !important;
-    }
-    
-    .presence-toast .close-btn:hover {
-        background: rgba(148, 163, 184, 0.12) !important;
-        color: #1e293b !important;
-    }
-    
-    /* Error messages */
-    .error-message {
-        background: #fef2f2 !important;
-        color: #dc2626 !important;
-        border: 1px solid #fca5a5 !important;
-    }
-    
-    /* Scrollbar */
-    #messagesContainer::-webkit-scrollbar-track {
-        background: #f8fafc !important;
-    }
-    
-    #messagesContainer::-webkit-scrollbar-thumb {
-        background: #cbd5e1 !important;
-    }
-    
-    #messagesContainer::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8 !important;
-    }
-}
+        @media (prefers-color-scheme: light) {
+            /* Override all existing light theme styles with higher specificity */
+
+            /* Body and container */
+            body {
+                background: #f8fafc !important;
+            }
+
+            body::before {
+                display: none !important;
+            }
+
+            .chat-container {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1) !important;
+            }
+
+            /* Header */
+            .chat-header {
+                background: #ffffff !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+
+            .chat-title {
+                color: #1e293b !important;
+                text-shadow: none !important;
+            }
+
+            .user-info {
+                color: #64748b !important;
+            }
+
+            .status-indicator {
+                background: rgba(37, 99, 235, 0.1) !important;
+                color: #1e293b !important;
+                border: 1px solid rgba(37, 99, 235, 0.2) !important;
+            }
+
+            /* Messages - The main fix */
+            .message.my-message {
+                background: rgba(37, 99, 235, 0.1) !important;
+                color: #1e293b !important;
+                border: 1px solid rgba(37, 99, 235, 0.2) !important;
+            }
+
+            .message.other-message {
+                background: #f1f5f9 !important;
+                color: #1e293b !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+
+            /* Message content */
+            .message-header {
+                color: #64748b !important;
+            }
+
+            .message-username {
+                color: #475569 !important;
+                font-weight: 600 !important;
+            }
+
+            .message-text {
+                color: #1e293b !important;
+                font-weight: 400 !important;
+            }
+
+            .message-time {
+                color: #64748b !important;
+            }
+
+            /* System messages */
+            .system-message,
+            .welcome-message,
+            .typing-indicator {
+                background: #f1f5f9 !important;
+                color: #1e293b !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+
+            /* Input area */
+            .input-container {
+                background: #ffffff !important;
+                border-top: 1px solid #e2e8f0 !important;
+            }
+
+            #messageInput {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                color: #1e293b !important;
+            }
+
+            #messageInput::placeholder {
+                color: #94a3b8 !important;
+            }
+
+            #messageInput:focus {
+                background: #ffffff !important;
+                border-color: #2563eb !important;
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+            }
+
+            #sendBtn {
+                background: #2563eb !important;
+                color: #ffffff !important;
+                border: none !important;
+            }
+
+            #sendBtn:disabled {
+                background: #cbd5e1 !important;
+                color: #64748b !important;
+            }
+
+            /* Reactions */
+            .reaction-badge {
+                background: #f1f5f9 !important;
+                color: #1e293b !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+
+            .reaction-badge.my-reaction {
+                background: rgba(37, 99, 235, 0.1) !important;
+                color: #1e293b !important;
+                border: 1px solid rgba(37, 99, 235, 0.3) !important;
+            }
+
+            .reaction-btn {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                color: #64748b !important;
+            }
+
+            .reaction-btn:hover {
+                background: #f1f5f9 !important;
+                color: #1e293b !important;
+            }
+
+            .reaction-menu {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1) !important;
+            }
+
+            .reaction-option {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                color: #1e293b !important;
+            }
+
+            .reaction-option:hover {
+                background: rgba(37, 99, 235, 0.1) !important;
+                border-color: rgba(37, 99, 235, 0.3) !important;
+            }
+
+            .reaction-option.current-reaction {
+                background: #2563eb !important;
+                color: #ffffff !important;
+                border-color: #2563eb !important;
+            }
+
+            /* Online users modal */
+            .online-users-modal {
+                background: rgba(15, 23, 42, 0.5) !important;
+            }
+
+            .online-users-content {
+                background: #ffffff !important;
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1) !important;
+            }
+
+            .online-users-title {
+                color: #1e293b !important;
+            }
+
+            .close-modal-btn {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                color: #64748b !important;
+            }
+
+            .close-modal-btn:hover {
+                background: #ef4444 !important;
+                color: #ffffff !important;
+            }
+
+            .online-user-item {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+
+            .online-user-item:hover {
+                background: #f1f5f9 !important;
+            }
+
+            .online-user-avatar {
+                background: linear-gradient(135deg, #2563eb 0%, #7dd3fc 100%) !important;
+                color: #ffffff !important;
+            }
+
+            .online-user-name {
+                color: #1e293b !important;
+            }
+
+            .online-user-status {
+                color: #64748b !important;
+            }
+
+            .no-users-message {
+                color: #64748b !important;
+            }
+
+            /* User count clickable */
+            #userCount {
+                background: rgba(37, 99, 235, 0.1) !important;
+                border: 1px solid rgba(37, 99, 235, 0.2) !important;
+                color: #1e293b !important;
+            }
+
+            #userCount:hover {
+                background: rgba(37, 99, 235, 0.15) !important;
+            }
+
+            /* Presence toasts */
+            .presence-toast {
+                background: rgba(255, 255, 255, 0.95) !important;
+                color: #1e293b !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+
+            .presence-toast .name {
+                color: #1e293b !important;
+            }
+
+            .presence-toast .meta {
+                color: #64748b !important;
+            }
+
+            .presence-toast .close-btn {
+                color: #64748b !important;
+            }
+
+            .presence-toast .close-btn:hover {
+                background: rgba(148, 163, 184, 0.12) !important;
+                color: #1e293b !important;
+            }
+
+            /* Error messages */
+            .error-message {
+                background: #fef2f2 !important;
+                color: #dc2626 !important;
+                border: 1px solid #fca5a5 !important;
+            }
+
+            /* Scrollbar */
+            #messagesContainer::-webkit-scrollbar-track {
+                background: #f8fafc !important;
+            }
+
+            #messagesContainer::-webkit-scrollbar-thumb {
+                background: #cbd5e1 !important;
+            }
+
+            #messagesContainer::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8 !important;
+            }
+        }
     </style>
     <link rel="stylesheet" href="chat.css">
     <!-- Socket.IO CDN - Load before main script -->
@@ -284,40 +286,51 @@
         }
     </script>
 </head>
+
 <body>
+    <!-- Animated Background -->
+    <div class="background-mesh"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
     <div class="chat-container">
         <div class="notification-banner" id="notificationBanner">
             <div class="notification-content">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; margin-right: 8px;">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+                    style="vertical-align: -2px; margin-right: 8px;">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                 </svg>
                 Chats will be deleted after 24 hours
             </div>
             <button class="notification-close" id="notificationClose" aria-label="Close notification">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                 </svg>
             </button>
         </div>
         <div class="chat-header">
             <div class="chat-title">Raisoni Gang</div>
             <div class="user-info">
-                <div id="userCount"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><circle cx="9" cy="8" r="3"/><path d="M3 18c0-3 3-5 6-5s6 2 6 5v1H3v-1z"/><circle cx="17" cy="9" r="2.5"/><path d="M14.5 18c0-2 2.5-3.5 4.5-3.5S23 16 23 18v1h-8.5v-1z"/></svg> 0 online</div>
+                <div id="userCount"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+                        style="vertical-align: -2px;">
+                        <circle cx="9" cy="8" r="3" />
+                        <path d="M3 18c0-3 3-5 6-5s6 2 6 5v1H3v-1z" />
+                        <circle cx="17" cy="9" r="2.5" />
+                        <path d="M14.5 18c0-2 2.5-3.5 4.5-3.5S23 16 23 18v1h-8.5v-1z" />
+                    </svg> 0 online</div>
                 <div class="status-indicator" id="connectionStatus">Connecting...</div>
             </div>
         </div>
-        
+
         <div id="messagesContainer"></div>
-        
+
         <div class="input-container">
-            <textarea 
-                id="messageInput" 
-                placeholder="Type your message..." 
-                rows="1"
-            ></textarea>
+            <textarea id="messageInput" placeholder="Type your message..." rows="1"></textarea>
             <button id="sendBtn" disabled>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                 </svg>
             </button>
         </div>
@@ -328,7 +341,12 @@
         <div class="online-users-content">
             <div class="online-users-header">
                 <div class="online-users-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#2d3748" style="vertical-align: -2px;"><circle cx="9" cy="8" r="3"/><path d="M3 18c0-3 3-5 6-5s6 2 6 5v1H3v-1z"/><circle cx="17" cy="9" r="2.5"/><path d="M14.5 18c0-2 2.5-3.5 4.5-3.5S23 16 23 18v1h-8.5v-1z"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#2d3748" style="vertical-align: -2px;">
+                        <circle cx="9" cy="8" r="3" />
+                        <path d="M3 18c0-3 3-5 6-5s6 2 6 5v1H3v-1z" />
+                        <circle cx="17" cy="9" r="2.5" />
+                        <path d="M14.5 18c0-2 2.5-3.5 4.5-3.5S23 16 23 18v1h-8.5v-1z" />
+                    </svg>
                     Online Users
                 </div>
                 <button class="close-modal-btn" id="closeModalBtn">×</button>
@@ -340,4 +358,5 @@
     </div>
     <script src="chat.js"></script>
 </body>
+
 </html>
