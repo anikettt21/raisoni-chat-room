@@ -11,7 +11,9 @@ class RealTimeChatApp {
         this.sendBtn = document.getElementById('sendBtn');
         this.userCountElement = document.getElementById('userCount');
         this.connectionStatus = document.getElementById('connectionStatus');
-        this.username = this.getUsername();
+        this.userCountElement = document.getElementById('userCount');
+        this.connectionStatus = document.getElementById('connectionStatus');
+        this.username = null; // Will be set on login
         this.socket = null;
         this.isConnected = false;
         this.reconnectAttempts = 0;
@@ -29,25 +31,130 @@ class RealTimeChatApp {
         // Presence toasts container
         this.presenceToasts = null;
 
+        // Reply state
+        this.replyingTo = null;
+        this.replyPreview = document.getElementById('replyPreview');
+        this.replyToUsername = document.getElementById('replyToUsername');
+        this.replyToText = document.getElementById('replyToText');
+        this.cancelReplyBtn = document.getElementById('cancelReplyBtn');
+
+        // Auth Elements
+        this.authModal = document.getElementById('authModal');
+        this.loginForm = document.getElementById('loginForm');
+        this.registerForm = document.getElementById('registerForm');
+        this.authTabs = document.querySelectorAll('.auth-tab');
+        this.avatarGrid = document.getElementById('avatarGrid');
+
+        this.avatar = null; // Store current user avatar
+        this.avatars = ['😎', '👻', '👾', '🤖', '👽', '💀', '🤡', '👹', '👺', '💩', '😺', '😸', '😹', '😻', '😼'];
+
         debugLog('Initializing chat app...');
+        this.initializeAuth();
         this.initializeEventListeners();
         this.initializeSocket();
     }
 
-    getUsername() {
-        // Try to get saved nickname from localStorage first
-        const savedNickname = localStorage.getItem('nickname') || localStorage.getItem('userNickname');
-        if (savedNickname && savedNickname.trim()) {
-            const username = savedNickname.trim();
-            debugLog(`Using saved username: ${username}`);
-            return username;
+    initializeAuth() {
+        // Tab switching
+        this.authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                this.authTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                const formId = tab.dataset.tab === 'login' ? 'loginForm' : 'registerForm';
+                document.getElementById(formId).classList.add('active');
+            });
+        });
+
+        // Avatar Grid
+        if (this.avatarGrid) {
+            this.avatars.forEach(emoji => {
+                const el = document.createElement('div');
+                el.className = 'avatar-option';
+                el.textContent = emoji;
+                el.onclick = () => {
+                    document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
+                    el.classList.add('selected');
+                    document.getElementById('selectedAvatar').value = emoji;
+                };
+                this.avatarGrid.appendChild(el);
+            });
+            // Select first by default
+            const first = this.avatarGrid.querySelector('.avatar-option');
+            if (first) first.classList.add('selected');
+
+            // Avatar toggle functionality
+            const toggleBtn = document.getElementById('toggleAvatarsBtn');
+            const grid = document.getElementById('avatarGrid');
+            if (toggleBtn && grid) {
+                toggleBtn.addEventListener('click', () => {
+                    grid.classList.toggle('collapsed');
+                    toggleBtn.classList.toggle('rotated');
+                });
+            }
         }
 
-        // Fallback to generated username
-        const randomNum = Math.floor(Math.random() * 10000);
-        const username = `User${randomNum}`;
-        debugLog(`Generated username: ${username}`);
-        return username;
+        // Login Submit
+        if (this.loginForm) {
+            this.loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+                if (username && password && this.socket) {
+                    this.socket.emit('login', { username, password });
+                    this.showAuthMessage('loginMsg', 'Logging in...', 'neutral');
+                }
+            });
+        }
+
+        // Register Submit
+        if (this.registerForm) {
+            this.registerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = document.getElementById('regUsername').value.trim();
+                const password = document.getElementById('regPassword').value.trim();
+                const confirmPassword = document.getElementById('regConfirmPassword').value.trim();
+                const avatar = document.getElementById('selectedAvatar').value;
+
+                // validate username format
+                const usernameRegex = /^[a-zA-Z0-9_]+$/;
+                const usernameError = document.getElementById('regUsernameError');
+                if (usernameError) {
+                    usernameError.textContent = '';
+                    usernameError.classList.remove('visible');
+                }
+
+                if (!usernameRegex.test(username)) {
+                    if (usernameError) {
+                        usernameError.textContent = 'Username can only contain letters, numbers, and underscores.';
+                        usernameError.classList.add('visible');
+                    } else {
+                        this.showAuthMessage('regMsg', 'Username can only contain letters, numbers, and underscores.', 'error');
+                    }
+                    return;
+                }
+
+                // validate password confirmation
+                if (password !== confirmPassword) {
+                    this.showAuthMessage('regMsg', 'Passwords do not match.', 'error');
+                    return;
+                }
+
+                if (username && password && this.socket) {
+                    this.socket.emit('register', { username, password, avatar });
+                    this.showAuthMessage('regMsg', 'Creating account...', 'neutral');
+                }
+            });
+        }
+    }
+
+    showAuthMessage(elementId, msg, type = 'error') {
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.textContent = msg;
+            el.className = `auth-msg ${type}`;
+        }
     }
 
     initializeSocket() {
@@ -82,33 +189,75 @@ class RealTimeChatApp {
 
             // Connection successful
             this.socket.on('connect', () => {
-                debugLog('✅ Connected to server');
+                debugLog('✅ Connected to server - Waiting for auth');
                 this.isConnected = true;
-                this.reconnectAttempts = 0;
+                this.updateConnectionStatus('Connected • Please Login');
+            });
+
+            // Auth Events
+            this.socket.on('login_success', (data) => {
+                this.username = data.username;
+                this.avatar = data.avatar;
+                if (this.authModal) this.authModal.style.display = 'none';
                 this.updateConnectionStatus(`Connected as ${this.username} 🟢`);
+                this.showPresenceToast('join', `Welcome ${this.username}!`);
 
-                // Add current user to online users set
-                this.onlineUsers.add(this.username);
-                this.updateUserCount(this.onlineUsers.size);
+                // Allow interactions
+                this.sendBtn.disabled = true; // Wait for input
+            });
 
-                // Join chat with username
-                debugLog(`Joining chat as: ${this.username}`);
-                this.socket.emit('user joined', {
-                    username: this.username,
-                    timestamp: new Date()
-                });
+            this.socket.on('register_success', (data) => {
+                this.showAuthMessage('regMsg', data.message, 'success');
+                setTimeout(() => {
+                    const loginTab = document.querySelector('[data-tab="login"]');
+                    if (loginTab) loginTab.click();
+                }, 1500);
+            });
+
+            this.socket.on('login_error', (data) => {
+                this.showAuthMessage('loginMsg', data.message, 'error');
+            });
+
+            this.socket.on('register_error', (data) => {
+                const regMsg = document.getElementById('regMsg');
+                const usernameError = document.getElementById('regUsernameError');
+
+                // Clear previous errors
+                if (usernameError) {
+                    usernameError.textContent = '';
+                    usernameError.classList.remove('visible');
+                }
+                if (regMsg) {
+                    regMsg.textContent = '';
+                    regMsg.className = 'auth-msg';
+                }
+
+                // Check if it's a username specific error
+                if (data.message.includes('Username') || data.message.includes('username')) {
+                    if (usernameError) {
+                        usernameError.textContent = data.message;
+                        usernameError.classList.add('visible');
+
+                        // Also show in main msg for fallback but less prominent or just rely on field error
+                        // For now, let's keep it specific to the field as requested
+                        return;
+                    }
+                }
+
+                // Fallback for other errors
+                this.showAuthMessage('regMsg', data.message, 'error');
             });
 
             // Handle incoming messages
             this.socket.on('chat message', (data) => {
                 debugLog(`📩 Received message from ${data.username}: ${data.message}`);
-                this.addMessage(data.username, data.message, data.username === this.username, data.timestamp, data.id, data.reactions);
+                this.addMessage(data.username, data.message, data.username === this.username, data.timestamp, data.id, data.reactions, data.replyTo, data.avatar);
             });
 
             // Handle user join notifications
             this.socket.on('user joined', (data) => {
                 debugLog(`👋 User joined: ${data.username}`);
-                if (data && data.username) {
+                if (data.username !== this.username) {
                     this.showPresenceToast('join', data.username);
                 }
                 this.onlineUsers.add(data.username);
@@ -141,13 +290,12 @@ class RealTimeChatApp {
             this.socket.on('online users', (users) => {
                 debugLog(`👥 Received online users list: ${users.length} users`);
                 this.onlineUsers.clear();
-                users.forEach(username => {
-                    this.onlineUsers.add(username);
+                // users is now array of objects {username, avatar}
+                users.forEach(u => {
+                    this.onlineUsers.add(u.username);
                 });
                 this.updateUserCount(this.onlineUsers.size);
-
-                // Refresh the modal if it's currently open
-                this.refreshOnlineUsersList();
+                this.updateOnlineUsersList(users);
             });
 
             // Handle typing indicators
@@ -163,12 +311,9 @@ class RealTimeChatApp {
                 }
             });
 
-            // Handle username change notifications
+            // Handle username change notifications (Deprecated mostly with auth, but keep for robustness)
             this.socket.on('username changed', (data) => {
-                debugLog(`🔄 Username changed from ${data.oldUsername} to ${data.newUsername}`);
-                this.username = data.newUsername;
-                this.updateConnectionStatus(`Connected as ${this.username} 🟢`);
-                this.addSystemMessage(`${data.oldUsername} is now ${data.newUsername}`, new Date().toISOString());
+                // ...
             });
 
             // Handle reaction updates
@@ -187,7 +332,7 @@ class RealTimeChatApp {
                     if (Array.isArray(messages)) {
                         messages.forEach((m) => {
                             if (!m || !m.id) return;
-                            this.addMessage(m.username, m.message, m.username === this.username, m.timestamp, m.id, m.reactions || {});
+                            this.addMessage(m.username, m.message, m.username === this.username, m.timestamp, m.id, m.reactions || {}, m.replyTo);
                         });
                     }
                 } catch (e) {
@@ -364,6 +509,13 @@ class RealTimeChatApp {
             });
         }
 
+        // Cancel reply button
+        if (this.cancelReplyBtn) {
+            this.cancelReplyBtn.addEventListener('click', () => {
+                this.cancelReply();
+            });
+        }
+
         // Initial button state
         this.sendBtn.disabled = true;
 
@@ -477,7 +629,8 @@ class RealTimeChatApp {
             message: messageText,
             timestamp: new Date().toISOString(),
             isMyMessage: true,
-            reactions: {}
+            reactions: {},
+            replyTo: this.replyingTo
         };
 
         this.messageCount++;
@@ -489,13 +642,17 @@ class RealTimeChatApp {
                 username: messageData.username,
                 message: messageData.message,
                 timestamp: messageData.timestamp,
-                id: messageData.id
+                id: messageData.id,
+                replyTo: messageData.replyTo
             });
         } else {
             debugLog('💾 Socket not connected, adding message locally only');
             // Fallback to local display if not connected
-            this.addMessage(messageData.username, messageData.message, true, messageData.timestamp, messageData.id, messageData.reactions);
+            this.addMessage(messageData.username, messageData.message, true, messageData.timestamp, messageData.id, messageData.reactions, messageData.replyTo, this.avatar);
         }
+
+
+        this.cancelReply();
 
         // Clear input and reset textarea
         this.messageInput.value = '';
@@ -505,7 +662,7 @@ class RealTimeChatApp {
         debugLog('✅ Message sent and input cleared');
     }
 
-    addMessage(username, text, isMyMessage = false, timestamp = null, messageId = null, reactions = {}) {
+    addMessage(username, text, isMyMessage = false, timestamp = null, messageId = null, reactions = {}, replyTo = null, avatar = '😊') {
         debugLog(`📝 Adding message to UI: ${username}: ${text}`);
 
         // Remove any existing typing indicators for this user
@@ -534,15 +691,35 @@ class RealTimeChatApp {
         // Create reactions HTML
         const reactionsHtml = this.createReactionsHtml(reactions, messageId);
 
+        // Create reply context HTML if it exists
+        let replyHtml = '';
+        if (replyTo) {
+            replyHtml = `
+                <div class="reply-context" data-reply-id="${replyTo.id}">
+                    <div class="reply-context-header">${this.escapeHtml(replyTo.username)}</div>
+                    <div class="reply-context-text">${this.escapeHtml(replyTo.message)}</div>
+                </div>
+            `;
+        }
+
         messageDiv.innerHTML = `
                     <div class="message-header">
+                        <div class="user-avatar">${avatar}</div>
                         <span class="message-username">${this.escapeHtml(username)}</span>
                         <span class="message-time">${time}</span>
                     </div>
+                    ${replyHtml}
                     <div class="message-text">${this.escapeHtml(text)}</div>
-                    <div class="message-reactions">
-                        ${reactionsHtml}
-                        <button class="reaction-btn" data-message-id="${messageId}">
+                    <div class="message-bottom-row">
+                        <div class="message-reactions">
+                            ${reactionsHtml}
+                        </div>
+                        <button class="reply-btn" title="Reply">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/>
+                            </svg>
+                        </button>
+                        <button class="reaction-btn" data-message-id="${messageId}" title="Add Reaction">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                                 <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
                                 <circle cx="9" cy="10" r="1.2"/>
@@ -552,6 +729,24 @@ class RealTimeChatApp {
                         </button>
                     </div>
                 `;
+
+        // Add event listener for reply button
+        const replyBtn = messageDiv.querySelector('.reply-btn');
+        if (replyBtn) {
+            replyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.startReply(messageId, username, text);
+            });
+        }
+
+        // Add event listener for reply context click (scroll to original)
+        const replyContext = messageDiv.querySelector('.reply-context');
+        if (replyContext) {
+            replyContext.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.scrollToMessage(replyTo.id);
+            });
+        }
 
         // Add event listener for reaction button
         const reactionBtn = messageDiv.querySelector('.reaction-btn');
@@ -673,6 +868,51 @@ class RealTimeChatApp {
             this.currentReactionMenu.remove();
             this.currentReactionMenu = null;
             debugLog('🗑️ Reaction menu closed');
+        }
+    }
+
+    startReply(messageId, username, text) {
+        debugLog(`↩️ Replying to ${username}`);
+        this.replyingTo = { id: messageId, username, message: text };
+
+        if (this.replyToUsername) this.replyToUsername.textContent = username;
+        if (this.replyToText) this.replyToText.textContent = text;
+        if (this.replyPreview) this.replyPreview.style.display = 'flex';
+
+        if (this.messageInput) {
+            this.messageInput.focus();
+            this.messageInput.placeholder = `Replying to ${username}...`;
+        }
+    }
+
+    cancelReply() {
+        if (!this.replyingTo) return;
+
+        debugLog('❌ Cancelled reply');
+        this.replyingTo = null;
+
+        if (this.replyPreview) this.replyPreview.style.display = 'none';
+        if (this.replyToUsername) this.replyToUsername.textContent = '';
+        if (this.replyToText) this.replyToText.textContent = '';
+
+        if (this.messageInput) {
+            this.messageInput.placeholder = 'Type your message...';
+        }
+    }
+
+    scrollToMessage(messageId) {
+        const element = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Optional: highlight effect
+            element.style.transition = 'background 0.3s';
+            const originalBg = element.style.background;
+            element.style.background = 'rgba(168, 85, 247, 0.3)'; // Highlight color
+            setTimeout(() => {
+                element.style.background = originalBg;
+            }, 1000);
+        } else {
+            debugLog(`⚠️ Message ${messageId} not found in current view`);
         }
     }
 
@@ -808,23 +1048,7 @@ class RealTimeChatApp {
 
         // Update reactions display
         const reactionsHtml = this.createReactionsHtml(reactions, messageId);
-        reactionsContainer.innerHTML = reactionsHtml + `
-                    <button class="reaction-btn" data-message-id="${messageId}">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                            <circle cx="9" cy="10" r="1.2"/>
-                            <circle cx="15" cy="10" r="1.2"/>
-                            <path d="M8 14c1.2 1.5 3 2.2 4 2.2s2.8-.7 4-2.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                `;
-
-        // Re-attach event listeners
-        const newReactionBtn = reactionsContainer.querySelector('.reaction-btn');
-        newReactionBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.showReactionMenu(messageId, newReactionBtn);
-        });
+        reactionsContainer.innerHTML = reactionsHtml;
 
         const newReactionBadges = reactionsContainer.querySelectorAll('.reaction-badge');
         newReactionBadges.forEach(badge => {
@@ -913,6 +1137,53 @@ class RealTimeChatApp {
                         <path d="M14.5 18c0-2 2.5-3.5 4.5-3.5S23 16 23 18v1h-8.5v-1z"/>
                     </svg>
                     ${count} online`;
+    }
+
+    // Updated to support avatar
+    updateOnlineUsersList(users) {
+        const listContainer = document.getElementById('onlineUsersList');
+        if (!listContainer) return;
+
+        listContainer.innerHTML = '';
+
+        if (!users || users.length === 0) {
+            listContainer.innerHTML = '<div class="no-users-message">No active users</div>';
+            return;
+        }
+
+        users.forEach(user => {
+            const username = typeof user === 'string' ? user : user.username;
+            const avatar = user.avatar || '😊';
+            const isMe = username === this.username;
+
+            const div = document.createElement('div');
+            div.className = 'online-user-item';
+            div.innerHTML = `
+                <div class="online-user-avatar">${avatar}</div>
+                <div class="online-user-info">
+                    <span class="online-user-name">${this.escapeHtml(username)} ${isMe ? '(You)' : ''}</span>
+                    <span class="online-user-status">
+                        <span class="online-indicator"></span> Online
+                    </span>
+                </div>
+            `;
+
+            // Add click to invite to private chat (if not me)
+            if (!isMe) {
+                div.style.cursor = 'pointer';
+                div.addEventListener('click', () => {
+                    this.inviteToPrivateChat(username);
+                    this.hideOnlineUsersModal();
+                });
+            }
+
+            listContainer.appendChild(div);
+        });
+    }
+
+    refreshOnlineUsersList() {
+        // Request fresh list from server (handled by socket event)
+        if (this.socket) this.socket.emit('get online users');
     }
 
     showOnlineUsersModal() {

@@ -1781,3 +1781,441 @@ body::before {
         color: var(--muted) !important;
     }
 }
+
+/* Reply Styles */
+.reply-preview {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--glass-border);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideUp 0.2s ease-out;
+}
+
+.reply-info {
+    flex: 1;
+    overflow: hidden;
+    border-left: 4px solid #a855f7;
+    padding-left: 0.75rem;
+    margin-right: 1rem;
+}
+
+.reply-label {
+    font-size: 0.75rem;
+    color: #a855f7;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+
+.reply-text-preview {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cancel-reply-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-reply-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.reply-context {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    border-left: 3px solid #a855f7;
+    font-size: 0.8rem;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.reply-context:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.reply-context-header {
+    font-weight: 600;
+    color: #a855f7;
+    margin-bottom: 0.15rem;
+    font-size: 0.75rem;
+}
+
+.reply-context-text {
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reply-btn,
+.reaction-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    opacity: 0;
+    transition: all 0.2s;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.message:hover .reply-btn,
+.message:hover .reaction-btn {
+    opacity: 1;
+}
+
+.reply-btn:hover,
+.reaction-btn:hover {
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.1);
+    transform: scale(1.1);
+}
+
+.message-bottom-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    min-height: 24px;
+}
+
+@media (max-width: 480px) {
+    .reply-preview {
+        padding: 0.5rem 1rem;
+    }
+
+    .reply-btn {
+        opacity: 0.6;
+    }
+}
+
+/* Auth Modal Styles */
+.auth-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-container {
+    width: 90%;
+    max-width: 400px;
+    background: #1e293b;
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: authSlideUp 0.4s ease-out;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    /* Scrollbar styling for the modal */
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+}
+
+.auth-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.auth-container::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+.auth-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@keyframes authSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+    color: white;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.auth-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.auth-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.auth-tab.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: fadeIn 0.3s;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+}
+
+.auth-btn {
+    padding: 0.875rem;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 0.5rem;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4);
+}
+
+.auth-msg {
+    text-align: center;
+    font-size: 0.85rem;
+    min-height: 20px;
+    margin-top: 0.5rem;
+}
+
+.auth-msg.error {
+    color: #ef4444;
+}
+
+.auth-msg.success {
+    color: #10b981;
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+}
+
+.avatar-option {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.avatar-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.avatar-option.selected {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.2);
+}
+
+/* User Avatar in Chat */
+.message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+@media (prefers-color-scheme: light) {
+
+    .auth-modal .auth-msg,
+    .auth-modal,
+    .auth-header h2,
+    .auth-header p {
+        color: #ffffff !important;
+    }
+
+    .auth-msg.error {
+        color: #ff4d4d !important;
+    }
+}
+/* Field Error */
+.field-error {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    min-height: 1.2em;
+    display: none;
+}
+
+.field-error.visible {
+    display: block;
+}
+
+/* Avatar Grid Handling */
+.avatar-grid {
+    transition: max-height 0.3s ease-out;
+    overflow: hidden;
+}
+
+.avatar-grid.collapsed {
+    max-height: 70px; /* Approximate height for one row */
+    overflow: hidden;
+}
+
+.toggle-avatars-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    padding: 0.25rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-avatars-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.toggle-avatars-btn.rotated svg {
+    transform: rotate(180deg);
+}
+
+.toggle-avatars-btn svg {
+    transition: transform 0.3s;
+}
+
+/* FORCE HIDE AUTH SCROLLBAR (Fix for annoying arrows) */
+.auth-container {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.auth-container::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
